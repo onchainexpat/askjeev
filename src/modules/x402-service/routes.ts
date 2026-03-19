@@ -24,8 +24,9 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     return c.json(generateAgentJson({ deployedUrl }));
   });
 
-  // .well-known/x402 — service discovery for other agents
-  app.get('/.well-known/x402', (c) => {
+  // x402 service discovery — both paths for compatibility
+  // (.well-known may be blocked by some hosting providers)
+  const x402Discovery = (c: any) => {
     const base = deployedUrl || `http://localhost:${process.env.PORT || 3402}`;
     return c.json({
       version: 2,
@@ -59,7 +60,9 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       ],
       payTo: getAccount().address,
     });
-  });
+  };
+  app.get('/.well-known/x402', x402Discovery);
+  app.get('/x402-discovery', x402Discovery);
 
   // === x402 Payment Middleware ===
   // Applied BEFORE route handlers so unpaid requests get 402
@@ -103,28 +106,32 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
   // Swap quote service
   app.post('/api/swap-quote', async (c) => {
-    const body = await c.req.json();
-    const { tokenIn, tokenOut, amount } = body;
+    try {
+      const body = await c.req.json();
+      const { tokenIn, tokenOut, amount } = body;
 
-    if (!tokenIn || !tokenOut || !amount) {
-      return c.json({ error: 'tokenIn, tokenOut, and amount required' }, 400);
+      if (!tokenIn || !tokenOut || !amount) {
+        return c.json({ error: 'tokenIn, tokenOut, and amount required' }, 400);
+      }
+
+      const account = getAccount();
+      const quote = await getQuote(tokenIn as Address, tokenOut as Address, amount, account.address);
+
+      await log('service_swap_quote', 'api/swap-quote', { tokenIn, tokenOut, amount }, {
+        routing: quote.routing,
+        earned: '$0.005',
+      });
+
+      return c.json({
+        routing: quote.routing,
+        input: quote.quote.input || quote.quote.orderInfo?.input,
+        output: quote.quote.output || { amount: quote.quote.orderInfo?.outputs?.[0]?.startAmount },
+        gasFeeUSD: quote.quote.gasFeeUSD || 'gasless',
+        priceImpact: quote.quote.priceImpact,
+      });
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
     }
-
-    const account = getAccount();
-    const quote = await getQuote(tokenIn as Address, tokenOut as Address, amount, account.address);
-
-    await log('service_swap_quote', 'api/swap-quote', { tokenIn, tokenOut, amount }, {
-      routing: quote.routing,
-      earned: '$0.005',
-    });
-
-    return c.json({
-      routing: quote.routing,
-      input: quote.quote.input || quote.quote.orderInfo?.input,
-      output: quote.quote.output || { amount: quote.quote.orderInfo?.outputs?.[0]?.startAmount },
-      gasFeeUSD: quote.quote.gasFeeUSD || 'gasless',
-      priceImpact: quote.quote.priceImpact,
-    });
   });
 
   // Private analysis service (Venice)
