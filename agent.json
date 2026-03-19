@@ -1,7 +1,7 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "AskJeev",
-  "description": "Autonomous agent butler that discovers x402 services, swaps tokens via Uniswap, reasons privately via Venice AI, funds its own inference via Bankr LLM Gateway, and serves paid APIs to other agents — all on Base with ERC-8004 verified identity.",
+  "description": "Autonomous agent butler that discovers x402 services, swaps tokens via Uniswap on Base and Celo, reasons privately via Venice AI, funds its own inference via Bankr LLM Gateway, and serves paid APIs to other agents — with ERC-8004 verified identity and Self Agent ID support.",
   "services": [
     {
       "name": "x402",
@@ -17,11 +17,11 @@
   "x402Support": true,
   "active": true,
   "registrations": [],
-  "supportedTrust": ["reputation", "erc-8004"],
+  "supportedTrust": ["reputation", "erc-8004", "self-agent-id"],
   "capabilities": {
     "payments": ["x402-exact", "x402-escrow"],
-    "chains": ["eip155:8453"],
-    "tokens": ["USDC"],
+    "chains": ["eip155:8453", "eip155:42220"],
+    "tokens": ["USDC", "cUSD"],
     "llm": {
       "general": "bankr-gateway",
       "private": "venice-ai"
