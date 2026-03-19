@@ -63,7 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const responseBody = await response.text();
     res.send(responseBody);
   } catch (err: any) {
-    console.error('Handler error:', err);
-    res.status(500).json({ error: err.message });
+    console.error('Handler error:', err.message, err.stack);
+    res.status(500).json({ error: err.message, stack: err.stack?.split('\n').slice(0, 5) });
   }
 }
