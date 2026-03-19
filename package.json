@@ -38,6 +38,7 @@
   "dependencies": {
     "@hono/node-server": "^1.19.11",
     "@modelcontextprotocol/sdk": "^1.27.1",
+    "@selfxyz/agent-sdk": "^0.2.1",
     "@x402/core": "^2.7.0",
     "@x402/evm": "^2.7.0",
     "@x402/hono": "^2.7.0",

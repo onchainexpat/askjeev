@@ -59,6 +59,8 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
         },
       ],
       payTo: getAccount().address,
+      selfAgentIdSupported: process.env.SELF_ENABLED === 'true',
+      selfAgentIdDocs: 'https://docs.self.xyz/agent-id',
     });
   };
   app.get('/.well-known/x402', x402Discovery);
@@ -101,6 +103,29 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       ),
     );
   }
+
+  // === Self Agent ID Verification (optional layer) ===
+  // When Self headers are present, verifies the caller is human-backed.
+  // Non-required by default — agents without Self can still use x402 payment.
+  if (process.env.SELF_ENABLED === 'true') {
+    const { selfAgentAuth } = await import('../self/middleware.js');
+    const selfNetwork = (process.env.SELF_NETWORK as 'mainnet' | 'testnet') || 'mainnet';
+    app.use('/api/*', selfAgentAuth({ network: selfNetwork, required: false }));
+  }
+
+  // Self verification status endpoint
+  app.get('/api/self-status', (c) => {
+    const selfAgent = (c as any).get('selfAgent');
+    return c.json({
+      selfEnabled: process.env.SELF_ENABLED === 'true',
+      verified: !!selfAgent?.verified,
+      agentAddress: selfAgent?.address || null,
+      agentId: selfAgent?.agentId?.toString() || null,
+      message: selfAgent?.verified
+        ? 'This agent is human-backed (Self Agent ID verified on Celo)'
+        : 'Self Agent ID headers not provided or verification not enabled',
+    });
+  });
 
   // === Paid API Endpoints ===
 

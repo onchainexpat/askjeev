@@ -32,7 +32,7 @@ export function generateAgentJson(options: {
     registrations: options.agentId
       ? [{ agentId: parseInt(options.agentId), agentRegistry: options.agentRegistry }]
       : [],
-    supportedTrust: ['reputation', 'erc-8004'],
+    supportedTrust: ['reputation', 'erc-8004', 'self-agent-id'],
     capabilities: {
       payments: ['x402-exact', 'x402-escrow'],
       chains: ['eip155:8453'], // Base
