@@ -1,8 +1,11 @@
-import { writeFile, readFile } from 'fs/promises';
+import { writeFile, readFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 
-const LOG_PATH = join(process.cwd(), 'agent_log.json');
+// Use /tmp on Vercel (read-only filesystem), cwd locally
+const LOG_DIR = process.env.VERCEL ? tmpdir() : process.cwd();
+const LOG_PATH = join(LOG_DIR, 'agent_log.json');
 
 export interface LogEntry {
   timestamp: string;
@@ -36,18 +39,22 @@ export async function log(
     ...(options.decision && { decision: options.decision }),
   };
 
-  let entries: LogEntry[] = [];
-  if (existsSync(LOG_PATH)) {
-    try {
-      const raw = await readFile(LOG_PATH, 'utf-8');
-      entries = JSON.parse(raw);
-    } catch {
-      entries = [];
+  try {
+    let entries: LogEntry[] = [];
+    if (existsSync(LOG_PATH)) {
+      try {
+        const raw = await readFile(LOG_PATH, 'utf-8');
+        entries = JSON.parse(raw);
+      } catch {
+        entries = [];
+      }
     }
-  }
 
-  entries.push(entry);
-  await writeFile(LOG_PATH, JSON.stringify(entries, null, 2));
+    entries.push(entry);
+    await writeFile(LOG_PATH, JSON.stringify(entries, null, 2));
+  } catch {
+    // Silently fail on read-only filesystems (Vercel)
+  }
 }
 
 /**
