@@ -35,7 +35,7 @@ export function generateAgentJson(options: {
     supportedTrust: ['reputation', 'erc-8004', 'self-agent-id'],
     capabilities: {
       payments: ['x402-exact', 'x402-escrow'],
-      chains: ['eip155:8453'], // Base
+      chains: ['eip155:8453', 'eip155:42220'], // Base + Celo
       tokens: ['USDC'],
       llm: {
         general: 'bankr-gateway',

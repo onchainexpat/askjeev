@@ -1,16 +1,38 @@
 import { createWalletClient, createPublicClient, http, type Chain } from 'viem';
-import { base } from 'viem/chains';
+import { base, celo } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 
-// Base chain config
-export const CHAIN: Chain = base;
-export const BASE_RPC = process.env.BASE_RPC_URL || 'https://mainnet.base.org';
+// Supported chains
+export const CHAINS: Record<string, { chain: Chain; rpc: string; chainId: string }> = {
+  base: {
+    chain: base,
+    rpc: process.env.BASE_RPC_URL || 'https://mainnet.base.org',
+    chainId: '8453',
+  },
+  celo: {
+    chain: celo,
+    rpc: process.env.CELO_RPC_URL || 'https://forno.celo.org',
+    chainId: '42220',
+  },
+};
 
-// Common token addresses on Base
+// Default chain
+export const CHAIN: Chain = base;
+export const BASE_RPC = CHAINS.base.rpc;
+
+// Common token addresses per chain
 export const TOKENS = {
-  ETH: '0x0000000000000000000000000000000000000000' as const,   // Native ETH (for Uniswap API)
-  WETH: '0x4200000000000000000000000000000000000006' as const,  // Wrapped ETH
-  USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const, // USDC on Base
+  base: {
+    ETH: '0x0000000000000000000000000000000000000000' as const,
+    WETH: '0x4200000000000000000000000000000000000006' as const,
+    USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const,
+  },
+  celo: {
+    CELO: '0x0000000000000000000000000000000000000000' as const,
+    cUSD: '0x765DE816845861e75A25fCA122bb6898B8B1282a' as const,
+    USDC: '0xcebA9300f2b948710d2653dD7B07f33A8B32118C' as const,
+    USDT: '0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e' as const,
+  },
 } as const;
 
 // Uniswap
@@ -37,17 +59,19 @@ export function getAccount() {
   return privateKeyToAccount(key as `0x${string}`);
 }
 
-export function getWalletClient() {
+export function getWalletClient(chainName: 'base' | 'celo' = 'base') {
+  const { chain, rpc } = CHAINS[chainName];
   return createWalletClient({
     account: getAccount(),
-    chain: CHAIN,
-    transport: http(BASE_RPC),
+    chain,
+    transport: http(rpc),
   });
 }
 
-export function getPublicClient() {
+export function getPublicClient(chainName: 'base' | 'celo' = 'base') {
+  const { chain, rpc } = CHAINS[chainName];
   return createPublicClient({
-    chain: CHAIN,
-    transport: http(BASE_RPC),
+    chain,
+    transport: http(rpc),
   });
 }

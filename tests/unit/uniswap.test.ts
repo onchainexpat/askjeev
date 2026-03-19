@@ -4,10 +4,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('../../src/config.js', () => ({
   UNISWAP_API_BASE: 'https://trade-api.gateway.uniswap.org/v1',
   UNISWAP_API_KEY: 'test-key',
+  CHAINS: {
+    base: { chain: {}, rpc: 'https://mainnet.base.org', chainId: '8453' },
+    celo: { chain: {}, rpc: 'https://forno.celo.org', chainId: '42220' },
+  },
   TOKENS: {
-    ETH: '0x0000000000000000000000000000000000000000',
-    WETH: '0x4200000000000000000000000000000000000006',
-    USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    base: {
+      ETH: '0x0000000000000000000000000000000000000000',
+      WETH: '0x4200000000000000000000000000000000000006',
+      USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    },
+    celo: {
+      CELO: '0x0000000000000000000000000000000000000000',
+      cUSD: '0x765DE816845861e75A25fCA122bb6898B8B1282a',
+      USDC: '0xcebA9300f2b948710d2653dD7B07f33A8B32118C',
+    },
   },
   PERMIT2_ADDRESS: '0x000000000022D473030F116dDEE9F6B43aC78BA3',
   getAccount: () => ({

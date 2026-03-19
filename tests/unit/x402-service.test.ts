@@ -4,9 +4,13 @@ vi.mock('../../src/config.js', () => ({
   getAccount: () => ({
     address: '0x1234567890123456789012345678901234567890',
   }),
+  CHAINS: {
+    base: { chain: {}, rpc: 'https://mainnet.base.org', chainId: '8453' },
+    celo: { chain: {}, rpc: 'https://forno.celo.org', chainId: '42220' },
+  },
   TOKENS: {
-    ETH: '0x0000000000000000000000000000000000000000',
-    USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    base: { ETH: '0x0000000000000000000000000000000000000000', USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' },
+    celo: { CELO: '0x0000000000000000000000000000000000000000', USDC: '0xcebA9300f2b948710d2653dD7B07f33A8B32118C', cUSD: '0x765DE816845861e75A25fCA122bb6898B8B1282a' },
   },
   UNISWAP_API_BASE: 'https://trade-api.gateway.uniswap.org/v1',
   UNISWAP_API_KEY: 'test',
@@ -48,10 +52,11 @@ describe('x402 Service Routes', () => {
     expect(res.status).toBe(200);
     expect(data.version).toBe(2);
     expect(data.agent).toBe('AskJeev');
-    expect(data.endpoints).toHaveLength(3);
+    expect(data.endpoints).toHaveLength(4);
     expect(data.endpoints[0].path).toBe('/api/swap-quote');
-    expect(data.endpoints[1].path).toBe('/api/private-analyze');
-    expect(data.endpoints[2].path).toBe('/api/ask');
+    expect(data.endpoints[1].path).toBe('/api/balances');
+    expect(data.endpoints[2].path).toBe('/api/private-analyze');
+    expect(data.endpoints[3].path).toBe('/api/ask');
   });
 
   it('serves agent.json', async () => {

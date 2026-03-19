@@ -41,7 +41,7 @@ export const uniswapTools = {
       const account = getAccount();
 
       // Check approval first
-      if (tokenIn !== TOKENS.ETH) {
+      if (tokenIn !== TOKENS.base.ETH) {
         const approval = await checkApproval(tokenIn as Address, amount, account.address);
         if (approval.approvalNeeded && approval.tx) {
           const { getWalletClient } = await import('../../config.js');
@@ -78,7 +78,7 @@ export const uniswapTools = {
     }),
     handler: async ({ token }: { token?: string }) => {
       const account = getAccount();
-      const tokenAddr = (token || TOKENS.ETH) as Address;
+      const tokenAddr = (token || TOKENS.base.ETH) as Address;
       const balance = await getTokenBalance(tokenAddr, account.address);
 
       await log('balance_checked', 'check_token_balance', { token: tokenAddr }, { balance });

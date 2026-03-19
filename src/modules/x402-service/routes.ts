@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { getQuote } from '../uniswap/client.js';
 import { analyzePrivately } from '../venice/client.js';
 import { chat } from '../bankr/client.js';
-import { getAccount, TOKENS } from '../../config.js';
+import { getAccount } from '../../config.js';
 import { log } from '../identity/logger.js';
 import { generateAgentJson } from '../identity/agent-json.js';
 import type { Address } from 'viem';
@@ -31,15 +31,22 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     return c.json({
       version: 2,
       agent: 'AskJeev',
-      description: 'Autonomous agent butler — swap quotes, private analysis, and multi-model reasoning as paid APIs.',
+      description: 'Autonomous agent butler — cross-chain swap quotes, private analysis, and multi-model reasoning as paid APIs.',
+      supportedChains: ['base (8453)', 'celo (42220)'],
       endpoints: [
         {
           path: '/api/swap-quote',
           method: 'POST',
           price: '$0.005',
           currency: 'USDC',
-          network: 'base',
-          description: 'Get a Uniswap swap quote for any token pair on Base.',
+          network: 'base, celo',
+          description: 'Get a Uniswap swap quote for any token pair on Base or Celo. Pass {"chain":"celo"} for Celo.',
+        },
+        {
+          path: '/api/balances',
+          method: 'GET',
+          price: 'free',
+          description: 'Check wallet balances across Base and Celo.',
         },
         {
           path: '/api/private-analyze',
@@ -129,21 +136,23 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
   // === Paid API Endpoints ===
 
-  // Swap quote service
+  // Swap quote service (supports Base + Celo)
   app.post('/api/swap-quote', async (c) => {
     try {
       const body = await c.req.json();
-      const { tokenIn, tokenOut, amount } = body;
+      const { tokenIn, tokenOut, amount, chain } = body;
+      const targetChain = (chain === 'celo' ? 'celo' : 'base') as 'base' | 'celo';
 
       if (!tokenIn || !tokenOut || !amount) {
         return c.json({ error: 'tokenIn, tokenOut, and amount required' }, 400);
       }
 
       const account = getAccount();
-      const quote = await getQuote(tokenIn as Address, tokenOut as Address, amount, account.address);
+      const quote = await getQuote(tokenIn as Address, tokenOut as Address, amount, account.address, targetChain);
 
-      await log('service_swap_quote', 'api/swap-quote', { tokenIn, tokenOut, amount }, {
+      await log('service_swap_quote', 'api/swap-quote', { tokenIn, tokenOut, amount, chain: targetChain }, {
         routing: quote.routing,
+        chain: targetChain,
         earned: '$0.005',
       });
 
@@ -153,6 +162,45 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
         output: quote.quote.output || { amount: quote.quote.orderInfo?.outputs?.[0]?.startAmount },
         gasFeeUSD: quote.quote.gasFeeUSD || 'gasless',
         priceImpact: quote.quote.priceImpact,
+      });
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
+  // Cross-chain balance check (Base + Celo)
+  app.get('/api/balances', async (c) => {
+    try {
+      const account = getAccount();
+      const { getTokenBalance } = await import('../uniswap/client.js');
+      const { getPublicClient, TOKENS: T } = await import('../../config.js');
+
+      // Base balances
+      const baseEth = await getTokenBalance('0x0000000000000000000000000000000000000000', account.address, 'base');
+      const baseUsdc = await getTokenBalance(T.base.USDC, account.address, 'base');
+
+      // Celo balances
+      const celoCelo = await getTokenBalance('0x0000000000000000000000000000000000000000', account.address, 'celo');
+      const celoUsdc = await getTokenBalance(T.celo.USDC, account.address, 'celo');
+      const celoCusd = await getTokenBalance(T.celo.cUSD, account.address, 'celo');
+
+      await log('balances_checked', 'api/balances', { wallet: account.address }, { chains: ['base', 'celo'] });
+
+      return c.json({
+        wallet: account.address,
+        chains: {
+          base: {
+            chainId: 8453,
+            ETH: baseEth,
+            USDC: baseUsdc,
+          },
+          celo: {
+            chainId: 42220,
+            CELO: celoCelo,
+            USDC: celoUsdc,
+            cUSD: celoCusd,
+          },
+        },
       });
     } catch (err: any) {
       return c.json({ error: err.message }, 500);

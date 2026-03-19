@@ -1,4 +1,4 @@
-import { UNISWAP_API_BASE, UNISWAP_API_KEY, TOKENS, getWalletClient, getAccount } from '../../config.js';
+import { UNISWAP_API_BASE, UNISWAP_API_KEY, CHAINS, getWalletClient, getAccount } from '../../config.js';
 import type { Address } from 'viem';
 
 const headers = {
@@ -66,7 +66,9 @@ export async function getQuote(
   tokenOut: Address,
   amount: string,
   swapper: Address,
+  chain: 'base' | 'celo' = 'base',
 ): Promise<SwapQuote> {
+  const chainId = CHAINS[chain].chainId;
   const res = await fetch(`${UNISWAP_API_BASE}/quote`, {
     method: 'POST',
     headers,
@@ -74,8 +76,8 @@ export async function getQuote(
       swapper,
       tokenIn,
       tokenOut,
-      tokenInChainId: '8453',
-      tokenOutChainId: '8453',
+      tokenInChainId: chainId,
+      tokenOutChainId: chainId,
       amount,
       type: 'EXACT_INPUT',
       slippageTolerance: 0.5,
@@ -178,11 +180,11 @@ export async function executeSwap(quoteResponse: SwapQuote): Promise<SwapResult>
 /**
  * Check ERC20 token balance.
  */
-export async function getTokenBalance(token: Address, wallet: Address): Promise<string> {
+export async function getTokenBalance(token: Address, wallet: Address, chain: 'base' | 'celo' = 'base'): Promise<string> {
   const { getPublicClient } = await import('../../config.js');
-  const client = getPublicClient();
+  const client = getPublicClient(chain);
 
-  if (token === TOKENS.ETH || token === TOKENS.WETH) {
+  if (token === '0x0000000000000000000000000000000000000000') {
     const balance = await client.getBalance({ address: wallet });
     return balance.toString();
   }
