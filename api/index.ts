@@ -3,6 +3,7 @@ import { createRoutes } from '../src/modules/x402-service/routes.js';
 
 export const config = {
   runtime: 'nodejs',
+  maxDuration: 30,
 };
 
 const deployedUrl = process.env.DEPLOYED_URL
@@ -10,12 +11,15 @@ const deployedUrl = process.env.DEPLOYED_URL
 
 const FACILITATOR_URL = process.env.X402_FACILITATOR_URL || 'https://facilitator.payai.network';
 const NETWORK = (process.env.X402_NETWORK || 'eip155:8453') as `${string}:${string}`;
-const DEV_SKIP_PAYMENT = process.env.DEV_SKIP_PAYMENT === 'true';
+const DEV_SKIP_PAYMENT = process.env.DEV_SKIP_PAYMENT?.trim() === 'true';
 
-const app = createRoutes(deployedUrl, {
+const appPromise = createRoutes(deployedUrl, {
   facilitatorUrl: FACILITATOR_URL,
   network: NETWORK,
   skipPayment: DEV_SKIP_PAYMENT,
 });
 
-export default handle(app);
+export default async function handler(req: any, res: any) {
+  const app = await appPromise;
+  return handle(app)(req, res);
+}

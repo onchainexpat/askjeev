@@ -28,7 +28,7 @@ describe('x402 Service Routes', () => {
 
   it('serves health check', async () => {
     const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
-    const app = createRoutes();
+    const app = await createRoutes();
 
     const res = await app.request('/health');
     const data = await res.json();
@@ -40,7 +40,7 @@ describe('x402 Service Routes', () => {
 
   it('serves .well-known/x402 discovery', async () => {
     const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
-    const app = createRoutes('https://askjeev.example.com');
+    const app = await createRoutes('https://askjeev.example.com');
 
     const res = await app.request('/.well-known/x402');
     const data = await res.json();
@@ -56,7 +56,7 @@ describe('x402 Service Routes', () => {
 
   it('serves agent.json', async () => {
     const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
-    const app = createRoutes('https://askjeev.example.com');
+    const app = await createRoutes('https://askjeev.example.com');
 
     const res = await app.request('/agent.json');
     const data = await res.json();
@@ -69,7 +69,7 @@ describe('x402 Service Routes', () => {
 
   it('rejects swap-quote without required fields', async () => {
     const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
-    const app = createRoutes();
+    const app = await createRoutes();
 
     const res = await app.request('/api/swap-quote', {
       method: 'POST',
@@ -82,7 +82,7 @@ describe('x402 Service Routes', () => {
 
   it('rejects ask without prompt', async () => {
     const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
-    const app = createRoutes();
+    const app = await createRoutes();
 
     const res = await app.request('/api/ask', {
       method: 'POST',
@@ -95,7 +95,7 @@ describe('x402 Service Routes', () => {
 
   it('rejects private-analyze without prompt', async () => {
     const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
-    const app = createRoutes();
+    const app = await createRoutes();
 
     const res = await app.request('/api/private-analyze', {
       method: 'POST',

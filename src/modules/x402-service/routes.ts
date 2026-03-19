@@ -1,7 +1,4 @@
 import { Hono } from 'hono';
-import { paymentMiddleware, x402ResourceServer } from '@x402/hono';
-import { HTTPFacilitatorClient } from '@x402/core/server';
-import { ExactEvmScheme } from '@x402/evm/exact/server';
 import { getQuote } from '../uniswap/client.js';
 import { analyzePrivately } from '../venice/client.js';
 import { chat } from '../bankr/client.js';
@@ -16,7 +13,7 @@ export interface X402Config {
   skipPayment: boolean;
 }
 
-export function createRoutes(deployedUrl?: string, x402Config?: X402Config): Hono {
+export async function createRoutes(deployedUrl?: string, x402Config?: X402Config): Promise<Hono> {
   const app = new Hono();
 
   // Health check
@@ -66,7 +63,12 @@ export function createRoutes(deployedUrl?: string, x402Config?: X402Config): Hon
 
   // === x402 Payment Middleware ===
   // Applied BEFORE route handlers so unpaid requests get 402
+  // Dynamic import to avoid loading heavy crypto libs when payment is skipped
   if (x402Config && !x402Config.skipPayment) {
+    const { paymentMiddleware, x402ResourceServer } = await import('@x402/hono');
+    const { HTTPFacilitatorClient } = await import('@x402/core/server');
+    const { ExactEvmScheme } = await import('@x402/evm/exact/server');
+
     const walletAddress = getAccount().address;
     const facilitatorClient = new HTTPFacilitatorClient({ url: x402Config.facilitatorUrl });
     const resourceServer = new x402ResourceServer(facilitatorClient).register(
