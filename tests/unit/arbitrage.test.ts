@@ -80,6 +80,7 @@ vi.mock('../../src/config.js', () => ({
   QUOTE_CHAINS: MOCK_QUOTE_CHAINS,
   QUOTE_TOKENS: MOCK_QUOTE_TOKENS,
   DEFAULT_CROSS_CHAIN_CHAINS: ['ethereum', 'base', 'arbitrum', 'polygon', 'optimism'],
+  ALL_CROSS_CHAIN_CHAINS: ['ethereum', 'base', 'arbitrum', 'polygon', 'optimism', 'celo', 'bnb', 'avalanche', 'blast', 'worldchain'],
   UNISWAP_API_BASE: 'https://trade-api.gateway.uniswap.org/v1',
   UNISWAP_API_KEY: 'test',
   VENICE_API_BASE: 'https://api.venice.ai/api/v1',
@@ -477,6 +478,78 @@ describe('Arbitrage Service', () => {
     // 3 stablecoin pairs + 1 cross-chain pair = 4
     expect(result.pairsChecked).toBe(4);
     expect(result.opportunities).toHaveLength(0);
+  });
+
+  it('detectArbitrage uses premium defaults when selfVerified=true', async () => {
+    const { detectArbitrage } = await import('../../src/modules/arbitrage/service.js');
+
+    // selfVerified=true with mode=cross-chain should use all 10 chains → C(10,2)=45 pairs → 90 quotes
+    // All return same rate → no opportunities
+    for (let i = 0; i < 90; i++) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          routing: 'CLASSIC',
+          quote: { output: { amount: '50000000000000000' } },
+        }),
+      });
+    }
+
+    const result = await detectArbitrage({
+      mode: 'cross-chain',
+      selfVerified: true,
+      minSpreadPercent: 50, // high threshold so no opportunities
+    });
+
+    // Premium: all 10 chains → 45 pairs
+    expect(result.pairsChecked).toBe(45);
+  });
+
+  it('detectArbitrage uses standard defaults when selfVerified=false', async () => {
+    const { detectArbitrage } = await import('../../src/modules/arbitrage/service.js');
+
+    // selfVerified=false with mode=cross-chain should use default 5 chains → C(5,2)=10 pairs → 20 quotes
+    for (let i = 0; i < 20; i++) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          routing: 'CLASSIC',
+          quote: { output: { amount: '50000000000000000' } },
+        }),
+      });
+    }
+
+    const result = await detectArbitrage({
+      mode: 'cross-chain',
+      selfVerified: false,
+      minSpreadPercent: 50,
+    });
+
+    // Standard: default 5 chains → 10 pairs
+    expect(result.pairsChecked).toBe(10);
+  });
+
+  it('detectArbitrage explicit chains override tier defaults', async () => {
+    const { detectArbitrage } = await import('../../src/modules/arbitrage/service.js');
+
+    // Even with selfVerified=true, explicit chains=[eth,base] → 1 pair
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ routing: 'CLASSIC', quote: { output: { amount: '50000000000000000' } } }),
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ routing: 'CLASSIC', quote: { output: { amount: '50000000000000000' } } }),
+    });
+
+    const result = await detectArbitrage({
+      mode: 'cross-chain',
+      chains: ['ethereum', 'base'],
+      selfVerified: true,
+      minSpreadPercent: 50,
+    });
+
+    expect(result.pairsChecked).toBe(1);
   });
 
   it('detectArbitrage handles failed quotes gracefully', async () => {

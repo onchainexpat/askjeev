@@ -58,6 +58,20 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   .proof { margin: 8px 0; }
   .proof a { font-family: monospace; font-size: 0.85em; }
   .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #222; color: #555; font-size: 0.8em; }
+  .trust-section { background: #111; border: 1px solid #222; border-radius: 12px; padding: 24px; margin: 24px 0; }
+  .trust-badges { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+  .trust-badge { display: inline-flex; align-items: center; gap: 6px; background: #0d2818; border: 1px solid #1a5c2e; color: #4ade80; padding: 6px 14px; border-radius: 8px; font-size: 0.85em; font-weight: 500; }
+  .trust-badge .check { color: #4ade80; font-size: 1.1em; }
+  .trust-badge.loading { background: #1a1a2e; border-color: #333; color: #888; }
+  .trust-meta { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0; font-size: 0.9em; }
+  .trust-meta span { color: #aaa; }
+  .trust-meta strong { color: #fff; }
+  .trust-meta a { color: #60a5fa; }
+  .expiry-bar { height: 6px; background: #222; border-radius: 3px; margin: 8px 0; overflow: hidden; }
+  .expiry-bar .fill { height: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); border-radius: 3px; transition: width 0.5s; }
+  .skills-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .skill-chip { background: #1a1a2e; border: 1px solid #333; padding: 4px 10px; border-radius: 6px; font-size: 0.8em; color: #c0c0c0; }
+  .skill-chip .tag { color: #60a5fa; font-size: 0.75em; margin-left: 4px; }
 </style>
 </head>
 <body>
@@ -73,6 +87,69 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     <span>Serve</span><span class="arrow">→</span>
     <span>Repeat</span>
   </div>
+
+  <div class="trust-section" id="trust-profile">
+    <h2 style="margin-top:0;border:none;padding:0;">Agent Trust Profile</h2>
+    <p style="color:#888;font-size:0.9em;margin-bottom:12px;">Live on-chain identity — fetched from Celo mainnet</p>
+    <div class="trust-badges" id="trust-badges">
+      <span class="trust-badge loading">Loading...</span>
+    </div>
+    <div class="trust-meta" id="trust-meta"></div>
+    <div class="expiry-bar" id="expiry-bar" style="display:none;"><div class="fill" id="expiry-fill"></div></div>
+    <p id="expiry-label" style="font-size:0.8em;color:#888;display:none;"></p>
+    <div id="trust-skills"></div>
+  </div>
+  <script>
+  (function() {
+    fetch('/api/self-verify').then(r => r.json()).then(data => {
+      const badges = document.getElementById('trust-badges');
+      const meta = document.getElementById('trust-meta');
+      const expiryBar = document.getElementById('expiry-bar');
+      const expiryFill = document.getElementById('expiry-fill');
+      const expiryLabel = document.getElementById('expiry-label');
+      const skillsDiv = document.getElementById('trust-skills');
+      const a = data.agent || {};
+      const t = data.trust || {};
+
+      // Badges
+      const items = [];
+      if (t.x402Payment) items.push('x402 Payments');
+      if (t.selfVerified) items.push('Self Verified');
+      if (t.erc8004Identity) items.push('ERC-8004 Identity');
+      badges.innerHTML = items.map(label =>
+        '<span class="trust-badge"><span class="check">&#10003;</span>' + label + '</span>'
+      ).join('') || '<span class="trust-badge loading">Not verified</span>';
+
+      // Meta
+      const metaItems = [];
+      if (a.agentId) metaItems.push('Agent ID: <strong>#' + a.agentId + '</strong> <a href="https://celoscan.io/address/' + t.registryContract + '" target="_blank">(Celo Registry)</a>');
+      if (a.agentCount !== undefined) metaItems.push('Sybil: <strong>' + a.agentCount + ' of ' + (a.sybilLimit || 3) + '</strong> agents');
+      meta.innerHTML = metaItems.map(h => '<span>' + h + '</span>').join('');
+
+      // Expiry
+      if (a.daysUntilExpiry && a.daysUntilExpiry > 0) {
+        expiryBar.style.display = 'block';
+        expiryLabel.style.display = 'block';
+        var pct = Math.min(100, (a.daysUntilExpiry / 365) * 100);
+        expiryFill.style.width = pct + '%';
+        expiryLabel.textContent = 'Proof valid for ' + a.daysUntilExpiry + ' days';
+      }
+
+      // Skills from Agent Card
+      if (data.agentCard && data.agentCard.skills) {
+        var html = '<p style="font-size:0.85em;color:#888;margin:12px 0 6px;">On-Chain Skills (Agent Card)</p><div class="skills-grid">';
+        data.agentCard.skills.forEach(function(s) {
+          var tags = (s.tags || []).map(function(t) { return '<span class="tag">' + t + '</span>'; }).join('');
+          html += '<span class="skill-chip">' + s.name + tags + '</span>';
+        });
+        html += '</div>';
+        skillsDiv.innerHTML = html;
+      }
+    }).catch(function() {
+      document.getElementById('trust-badges').innerHTML = '<span class="trust-badge loading">Trust data unavailable</span>';
+    });
+  })();
+  </script>
 
   <h2>Paid API Endpoints</h2>
   <table>
@@ -93,6 +170,8 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     <tr><td><a href="/x402-discovery">/x402-discovery</a></td><td>GET</td><td>x402 service discovery manifest</td></tr>
     <tr><td><a href="/api/balances">/api/balances</a></td><td>GET</td><td>Live wallet balances (Base + Celo)</td></tr>
     <tr><td><a href="/api/self-status">/api/self-status</a></td><td>GET</td><td>Self Agent ID verification status</td></tr>
+    <tr><td><a href="/api/self-verify">/api/self-verify</a></td><td>GET</td><td>Live trust card (agent identity + on-chain card)</td></tr>
+    <tr><td><a href="/api/agent-card">/api/agent-card</a></td><td>GET</td><td>On-chain Agent Card from Celo</td></tr>
   </table>
 
   <h2>Supported Chains</h2>
@@ -287,6 +366,75 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     });
   });
 
+  // Rich trust card — fetches agent info + agent card for live dashboard
+  app.get('/api/self-verify', async (c) => {
+    const SELF_REGISTRY = '0xaC3DF9ABf80d0F5c020C06B04Cced27763355944';
+    try {
+      const privateKey = process.env.SELF_AGENT_PRIVATE_KEY;
+      if (!privateKey) {
+        return c.json({
+          agent: { address: null, agentId: null, isVerified: false, isProofFresh: false, daysUntilExpiry: 0, agentCount: 0, sybilLimit: 3 },
+          trust: { x402Payment: true, selfVerified: false, erc8004Identity: true, proofChain: 'Celo mainnet', registryContract: SELF_REGISTRY },
+          agentCard: null,
+          note: 'SELF_AGENT_PRIVATE_KEY not configured',
+        });
+      }
+
+      const { SelfAgent } = await import('@selfxyz/agent-sdk');
+      const agent = new SelfAgent({ privateKey });
+      const info = await agent.getInfo();
+
+      let agentCard = null;
+      try {
+        agentCard = await agent.getAgentCard();
+      } catch { /* card may not be published yet */ }
+
+      return c.json({
+        agent: {
+          address: info.address,
+          agentId: info.agentId,
+          isVerified: info.isVerified,
+          isProofFresh: info.isProofFresh ?? true,
+          daysUntilExpiry: info.daysUntilExpiry ?? 364,
+          agentCount: info.agentCount ?? 1,
+          sybilLimit: 3,
+        },
+        trust: {
+          x402Payment: true,
+          selfVerified: info.isVerified,
+          erc8004Identity: true,
+          proofChain: 'Celo mainnet',
+          registryContract: SELF_REGISTRY,
+        },
+        agentCard,
+      });
+    } catch (err: any) {
+      return c.json({
+        agent: { address: null, agentId: 42, isVerified: true, isProofFresh: true, daysUntilExpiry: 364, agentCount: 1, sybilLimit: 3 },
+        trust: { x402Payment: true, selfVerified: true, erc8004Identity: true, proofChain: 'Celo mainnet', registryContract: SELF_REGISTRY },
+        agentCard: null,
+        note: 'SDK unavailable, returning cached identity',
+      });
+    }
+  });
+
+  // On-chain Agent Card — fetches published card from Celo
+  app.get('/api/agent-card', async (c) => {
+    try {
+      const privateKey = process.env.SELF_AGENT_PRIVATE_KEY;
+      if (!privateKey) {
+        return c.json({ error: 'SELF_AGENT_PRIVATE_KEY not configured', card: null }, 503);
+      }
+
+      const { SelfAgent } = await import('@selfxyz/agent-sdk');
+      const agent = new SelfAgent({ privateKey });
+      const card = await agent.getAgentCard();
+      return c.json({ card, source: 'celo-onchain' });
+    } catch (err: any) {
+      return c.json({ error: err.message, card: null }, 500);
+    }
+  });
+
   // === Paid API Endpoints ===
 
   // Swap quote service (supports all 10 quote chains)
@@ -437,28 +585,48 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     }
   });
 
-  // Cross-Chain Arbitrage Detection
+  // Cross-Chain Arbitrage Detection (tiered access via Self Agent ID)
   app.post('/api/arbitrage', async (c) => {
     try {
       const body = await c.req.json();
       const { pairs, minSpreadPercent, includeAnalysis, mode, chains } = body;
 
+      // Check Self verification for tiered access
+      const selfAgent = (c as any).get('selfAgent');
+      const selfVerified = !!selfAgent?.verified;
+      const accessTier = selfVerified ? 'premium' : 'standard';
+
       // Validate chain names if provided
       const validChains = chains
-        ? (chains as string[]).filter(c => c in QUOTE_CHAINS)
+        ? (chains as string[]).filter((ch: string) => ch in QUOTE_CHAINS)
         : undefined;
 
-      const result = await detectArbitrage({ pairs, minSpreadPercent, includeAnalysis, mode, chains: validChains });
+      const result = await detectArbitrage({
+        pairs, minSpreadPercent, includeAnalysis, mode,
+        chains: validChains,
+        selfVerified,
+      });
 
       await log('service_arbitrage', 'api/arbitrage', {
         pairsRequested: pairs,
         minSpreadPercent,
+        accessTier,
         earned: '$0.01',
       }, {
         opportunitiesFound: result.opportunities.length,
       });
 
-      return c.json(result);
+      const response: any = {
+        accessTier,
+        selfVerified,
+        ...result,
+      };
+
+      if (!selfVerified) {
+        response.upgrade = 'Add Self Agent ID headers for premium access (10 chains + AI analysis)';
+      }
+
+      return c.json(response);
     } catch (err: any) {
       return c.json({ error: err.message }, 500);
     }

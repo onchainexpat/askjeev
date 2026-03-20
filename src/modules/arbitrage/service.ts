@@ -8,7 +8,7 @@
 
 import { getQuoteRate, getComparablePairs, getCrossChainPairs } from './client.js';
 import type { ArbitrageOpportunity, ComparablePair, QuoteRateResult } from './client.js';
-import { QUOTE_CHAINS } from '../../config.js';
+import { QUOTE_CHAINS, ALL_CROSS_CHAIN_CHAINS } from '../../config.js';
 import type { ChainName } from '../../config.js';
 import { analyzePrivately } from '../venice/client.js';
 import { log } from '../identity/logger.js';
@@ -19,6 +19,7 @@ export interface DetectArbitrageParams {
   includeAnalysis?: boolean;
   mode?: 'stablecoin' | 'cross-chain' | 'all';
   chains?: string[];
+  selfVerified?: boolean;
 }
 
 export interface DetectArbitrageResult {
@@ -59,12 +60,25 @@ async function batchQuotes<T>(
  * - 'all' (default): Both stablecoin and cross-chain pairs
  */
 export async function detectArbitrage(params: DetectArbitrageParams = {}): Promise<DetectArbitrageResult> {
-  const { pairs: pairFilter, minSpreadPercent = 0.1, includeAnalysis = true, mode = 'all', chains } = params;
+  // Tiered access: Self-verified agents get premium defaults (only when selfVerified is explicitly set)
+  const tierApplied = params.selfVerified !== undefined;
+  const isPremium = !!params.selfVerified;
+  const {
+    pairs: pairFilter,
+    minSpreadPercent = (tierApplied && isPremium) ? 0.01 : 0.1,
+    includeAnalysis = tierApplied ? isPremium : true,
+    mode = 'all',
+    chains,
+  } = params;
+
+  // When tier is applied: premium gets all 10 chains, standard gets default 5
+  // When no tier (direct call): use provided chains or default 5
+  const effectiveChains = chains
+    ? chains.filter((c): c is ChainName => c in QUOTE_CHAINS)
+    : (tierApplied && isPremium ? [...ALL_CROSS_CHAIN_CHAINS] : undefined);
 
   // Validate chain names if provided
-  const validChainNames = chains
-    ? chains.filter((c): c is ChainName => c in QUOTE_CHAINS)
-    : undefined;
+  const validChainNames = effectiveChains;
 
   // Collect pairs based on mode
   let allPairs: ComparablePair[] = [];

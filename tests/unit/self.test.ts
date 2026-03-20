@@ -123,6 +123,108 @@ describe('Self Agent ID Middleware', () => {
     });
   });
 
+  describe('selfAgent context enrichment', () => {
+    it('includes enriched fields (isProofFresh, daysUntilExpiry) on successful verification', async () => {
+      const { selfAgentAuth } = await import('../../src/modules/self/middleware.js');
+      const middleware = selfAgentAuth({ network: 'mainnet', required: false });
+
+      // Mock verifier to return successful verification
+      const mockSdk = await import('@selfxyz/agent-sdk');
+      const mockVerify = vi.fn().mockResolvedValue({
+        valid: true,
+        agentAddress: '0xFC543091E36BBE048EfF59E90Af7C293962eB4d0',
+        agentId: 42,
+        agentCount: 1,
+        isProofFresh: true,
+        proofExpiresAt: '2027-03-20T00:00:00Z',
+        daysUntilExpiry: 364,
+      });
+      (mockSdk.SelfAgentVerifier.create as any) = () => ({
+        network: vi.fn().mockReturnThis(),
+        sybilLimit: vi.fn().mockReturnThis(),
+        rateLimit: vi.fn().mockReturnThis(),
+        build: vi.fn().mockReturnValue({ verify: mockVerify }),
+      });
+
+      const contextStore: Record<string, any> = {};
+      const mockContext = {
+        req: {
+          header: vi.fn((h: string) => {
+            if (h === 'x-self-agent-signature') return 'test-sig';
+            if (h === 'x-self-agent-timestamp') return '1700000000000';
+            return undefined;
+          }),
+          text: vi.fn().mockResolvedValue(''),
+          method: 'POST',
+          url: 'http://localhost:3402/api/arbitrage',
+        },
+        set: vi.fn((k: string, v: any) => { contextStore[k] = v; }),
+      } as any;
+
+      let nextCalled = false;
+      await middleware(mockContext, async () => { nextCalled = true; });
+
+      expect(nextCalled).toBe(true);
+      expect(contextStore.selfAgent).toBeDefined();
+      expect(contextStore.selfAgent.verified).toBe(true);
+      expect(contextStore.selfAgent.isProofFresh).toBe(true);
+      expect(contextStore.selfAgent.daysUntilExpiry).toBe(364);
+    });
+  });
+
+  describe('self-verify endpoint via routes', () => {
+    it('returns trust card structure from /api/self-verify', async () => {
+      delete process.env.SELF_ENABLED;
+      delete process.env.SELF_AGENT_PRIVATE_KEY;
+
+      const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
+      const app = await createRoutes();
+
+      const res = await app.request('/api/self-verify');
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data).toHaveProperty('agent');
+      expect(data).toHaveProperty('trust');
+      expect(data.agent).toHaveProperty('isVerified');
+      expect(data.agent).toHaveProperty('sybilLimit');
+      expect(data.trust).toHaveProperty('x402Payment', true);
+      expect(data.trust).toHaveProperty('erc8004Identity', true);
+      expect(data.trust).toHaveProperty('proofChain', 'Celo mainnet');
+      expect(data.trust).toHaveProperty('registryContract');
+    });
+
+    it('returns graceful response when SELF_AGENT_PRIVATE_KEY is not set', async () => {
+      delete process.env.SELF_AGENT_PRIVATE_KEY;
+
+      const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
+      const app = await createRoutes();
+
+      const res = await app.request('/api/self-verify');
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data.agent.isVerified).toBe(false);
+      expect(data.note).toBe('SELF_AGENT_PRIVATE_KEY not configured');
+    });
+  });
+
+  describe('agent-card endpoint via routes', () => {
+    it('returns 503 when SELF_AGENT_PRIVATE_KEY is not set', async () => {
+      delete process.env.SELF_AGENT_PRIVATE_KEY;
+
+      const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
+      const app = await createRoutes();
+
+      const res = await app.request('/api/agent-card');
+      const data = await res.json();
+
+      expect(res.status).toBe(503);
+      expect(data.error).toBe('SELF_AGENT_PRIVATE_KEY not configured');
+      expect(data.card).toBeNull();
+    });
+  });
+
   describe('self-status endpoint via routes', () => {
     it('returns correct structure when Self is not verified', async () => {
       // Ensure SELF_ENABLED is not set so middleware is not mounted

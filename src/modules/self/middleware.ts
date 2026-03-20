@@ -79,12 +79,15 @@ export function selfAgentAuth(options: {
         }, status);
       }
 
-      // Attach verified agent info to context
+      // Attach verified agent info to context (enriched)
       c.set('selfAgent', {
         address: result.agentAddress,
         agentId: result.agentId,
         agentCount: result.agentCount,
         verified: true,
+        isProofFresh: result.isProofFresh ?? true,
+        proofExpiresAt: result.proofExpiresAt ?? null,
+        daysUntilExpiry: result.daysUntilExpiry ?? null,
       });
     } catch (err: any) {
       console.error('Self verification error:', err.message);

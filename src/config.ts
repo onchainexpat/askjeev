@@ -53,6 +53,7 @@ export type ChainName = keyof typeof QUOTE_CHAINS;
 export type WalletChainName = 'base' | 'celo';
 
 export const DEFAULT_CROSS_CHAIN_CHAINS: ChainName[] = ['ethereum', 'base', 'arbitrum', 'polygon', 'optimism'];
+export const ALL_CROSS_CHAIN_CHAINS: ChainName[] = Object.keys(QUOTE_CHAINS) as ChainName[];
 
 // USDC and WETH addresses per quote chain (for cross-chain arbitrage)
 export const QUOTE_TOKENS: Record<ChainName, {
