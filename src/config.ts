@@ -61,7 +61,6 @@ export type ChainName = keyof typeof QUOTE_CHAINS;
 export type WalletChainName = 'base' | 'celo';
 
 export const DEFAULT_CROSS_CHAIN_CHAINS: ChainName[] = ['ethereum', 'base', 'arbitrum', 'polygon', 'optimism'];
-export const ALL_CROSS_CHAIN_CHAINS: ChainName[] = (Object.keys(QUOTE_CHAINS) as ChainName[]).filter(c => c in QUOTE_TOKENS);
 
 // USDC and WETH addresses per quote chain (for cross-chain arbitrage)
 // Not all chains have WETH (e.g., Tempo is stablecoin-only)
@@ -139,6 +138,9 @@ export const QUOTE_TOKENS: Partial<Record<ChainName, {
   },
   // Tempo (4217) omitted — stablecoin-only L1, no WETH
 };
+
+// All chains with USDC+WETH pairs (for cross-chain arbitrage)
+export const ALL_CROSS_CHAIN_CHAINS: ChainName[] = (Object.keys(QUOTE_CHAINS) as ChainName[]).filter(c => c in QUOTE_TOKENS);
 
 // Uniswap
 export const UNISWAP_API_BASE = 'https://trade-api.gateway.uniswap.org/v1';
