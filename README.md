@@ -1,6 +1,6 @@
 # AskJeev
 
-> An autonomous agent butler that earns, swaps, reasons privately, and serves on Base — with verifiable ERC-8004 identity.
+> An autonomous agent butler that earns, swaps, detects cross-chain arbitrage across 10 chains, reasons privately, and serves on Base — with verifiable ERC-8004 identity.
 
 **Live:** [synthesis-hackathon-beta.vercel.app](https://synthesis-hackathon-beta.vercel.app/health)
 
@@ -12,10 +12,11 @@ AskJeev operates as a full economic participant on Base, demonstrating a complet
 
 1. **Earns USDC** by hosting paid x402 API services
 2. **Swaps tokens** via Uniswap Trading API when it needs a different asset
-3. **Thinks privately** using Venice AI for sensitive financial data (zero data retention)
-4. **Thinks generally** using Bankr LLM Gateway (20+ models, paid with USDC)
-5. **Serves other agents** through discoverable x402 endpoints
-6. **Proves identity** via ERC-8004 on-chain registration
+3. **Detects arbitrage** across 10 chains — compares WETH pricing via USDC→WETH quotes on Ethereum, Base, Arbitrum, Polygon, Optimism, Celo, BNB, Avalanche, Blast, and World Chain
+4. **Thinks privately** using Venice AI for sensitive financial data (zero data retention)
+5. **Thinks generally** using Bankr LLM Gateway (20+ models, paid with USDC)
+6. **Serves other agents** through discoverable x402 endpoints
+7. **Proves identity** via ERC-8004 on-chain registration
 
 ## The Problem
 
@@ -38,6 +39,9 @@ An agent that earns $10 in USDC can't use it to pay for its own LLM inference, o
 | `/api/swap-quote` | POST | $0.005 | Uniswap swap quote for any token pair |
 | `/api/private-analyze` | POST | $0.02 | Venice AI private analysis (zero retention) |
 | `/api/ask` | POST | $0.01 | Bankr multi-model reasoning (20+ models) |
+| `/api/arbitrage` | POST | $0.01 | Cross-chain arbitrage detection (10 chains) |
+| `/api/rebalance` | POST | $0.02 | Private portfolio rebalancer (Venice-analyzed) |
+| `/api/discover` | POST | $0.01 | x402 service discovery across the agent economy |
 
 ### Example: Get a Swap Quote
 
@@ -59,28 +63,42 @@ curl -X POST https://synthesis-hackathon-beta.vercel.app/api/private-analyze \
   -d '{"prompt": "Analyze ETH/USDC position risk for a 70/30 portfolio"}'
 ```
 
+### Example: Cross-Chain Arbitrage Detection
+
+```bash
+curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
+  -H "Content-Type: application/json" \
+  -d '{
+    "mode": "cross-chain",
+    "chains": ["ethereum", "base", "arbitrum", "polygon", "optimism"],
+    "minSpreadPercent": 0.1
+  }'
+```
+
+Returns WETH pricing discrepancies across chains — buy where it's cheap, sell where it's expensive. Supports 10 chains via the Uniswap Trading API with rate-limited batched quotes.
+
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────┐
-│              AskJeev Agent                  │
-│       (autonomous economic loop)            │
-├─────────────────────────────────────────────┤
-│                                             │
-│  EARN          SWAP          THINK          │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
-│  │ x402     │  │ Uniswap  │  │ Venice   │  │
-│  │ Service  │  │ Trading  │  │ (private)│  │
-│  │ Endpoints│  │ API      │  │          │  │
-│  └──────────┘  └──────────┘  │ Bankr    │  │
-│                              │ (general)│  │
-│  IDENTITY                    └──────────┘  │
-│  ┌──────────┐                              │
-│  │ ERC-8004 │                              │
-│  │ On-chain │                              │
-│  │ Identity │                              │
-│  └──────────┘                              │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│                   AskJeev Agent                      │
+│            (autonomous economic loop)                │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  EARN           SWAP            THINK                │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐         │
+│  │ x402     │   │ Uniswap  │   │ Venice   │         │
+│  │ Service  │   │ Trading  │   │ (private)│         │
+│  │ Endpoints│   │ API      │   │          │         │
+│  └──────────┘   └──────────┘   │ Bankr    │         │
+│                                │ (general)│         │
+│  DETECT          IDENTITY      └──────────┘         │
+│  ┌──────────┐   ┌──────────┐                        │
+│  │ Arbitrage│   │ ERC-8004 │                        │
+│  │ 10 chains│   │ On-chain │                        │
+│  │ WETH/USDC│   │ Identity │                        │
+│  └──────────┘   └──────────┘                        │
+└──────────────────────────────────────────────────────┘
 ```
 
 ## Tech Stack

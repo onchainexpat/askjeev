@@ -20,12 +20,26 @@
   "supportedTrust": ["reputation", "erc-8004", "self-agent-id"],
   "capabilities": {
     "payments": ["x402-exact", "x402-escrow"],
-    "chains": ["eip155:8453", "eip155:42220"],
+    "chains": [
+      "eip155:1",
+      "eip155:8453",
+      "eip155:42161",
+      "eip155:137",
+      "eip155:10",
+      "eip155:42220",
+      "eip155:56",
+      "eip155:43114",
+      "eip155:81457",
+      "eip155:480"
+    ],
     "tokens": ["USDC", "cUSD"],
     "llm": {
       "general": "bankr-gateway",
       "private": "venice-ai"
     },
-    "swaps": "uniswap-trading-api"
+    "swaps": "uniswap-trading-api",
+    "discovery": "x402-service-discovery",
+    "arbitrage": "cross-chain-arbitrage-detection",
+    "rebalancing": "private-portfolio-rebalancer"
   }
 }

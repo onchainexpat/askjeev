@@ -5,6 +5,10 @@ import { chat } from '../bankr/client.js';
 import { getAccount } from '../../config.js';
 import { log } from '../identity/logger.js';
 import { generateAgentJson } from '../identity/agent-json.js';
+import { discoverServices } from '../discovery/service.js';
+import { detectArbitrage } from '../arbitrage/service.js';
+import { rebalancePortfolio } from '../rebalance/service.js';
+import { QUOTE_CHAINS } from '../../config.js';
 import type { Address } from 'viem';
 
 export interface X402Config {
@@ -32,7 +36,10 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       version: 2,
       agent: 'AskJeev',
       description: 'Autonomous agent butler — cross-chain swap quotes, private analysis, and multi-model reasoning as paid APIs.',
-      supportedChains: ['base (8453)', 'celo (42220)'],
+      supportedChains: [
+        'ethereum (1)', 'base (8453)', 'arbitrum (42161)', 'polygon (137)', 'optimism (10)',
+        'celo (42220)', 'bnb (56)', 'avalanche (43114)', 'blast (81457)', 'worldchain (480)',
+      ],
       endpoints: [
         {
           path: '/api/swap-quote',
@@ -63,6 +70,30 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
           currency: 'USDC',
           network: 'base',
           description: 'General reasoning via Bankr LLM Gateway (20+ models).',
+        },
+        {
+          path: '/api/discover',
+          method: 'POST',
+          price: '$0.01',
+          currency: 'USDC',
+          network: 'base',
+          description: 'Discover x402 services across the agent economy — Venice-ranked search with live manifest fetching.',
+        },
+        {
+          path: '/api/arbitrage',
+          method: 'POST',
+          price: '$0.01',
+          currency: 'USDC',
+          network: 'base',
+          description: 'Detect cross-chain arbitrage opportunities across 10 chains via Uniswap quotes. Supports stablecoin pegs and USDC→WETH cross-chain pricing.',
+        },
+        {
+          path: '/api/rebalance',
+          method: 'POST',
+          price: '$0.02',
+          currency: 'USDC',
+          network: 'base',
+          description: 'Private portfolio rebalancer — Venice-analyzed with optional auto-execution.',
         },
       ],
       payTo: getAccount().address,
@@ -105,6 +136,9 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
           'POST /api/swap-quote': makeConfig('0.005', 'Uniswap swap quote for any token pair on Base'),
           'POST /api/private-analyze': makeConfig('0.02', 'Private financial analysis via Venice AI'),
           'POST /api/ask': makeConfig('0.01', 'General reasoning via Bankr LLM Gateway'),
+          'POST /api/discover': makeConfig('0.01', 'x402 service discovery — Venice-ranked search'),
+          'POST /api/arbitrage': makeConfig('0.01', 'Cross-chain arbitrage detection between Base and Celo'),
+          'POST /api/rebalance': makeConfig('0.02', 'Private portfolio rebalancer with optional auto-execution'),
         },
         resourceServer,
       ),
@@ -255,6 +289,104 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       model: response.model,
       usage: response.usage,
     });
+  });
+
+  // x402 Service Discovery
+  app.post('/api/discover', async (c) => {
+    try {
+      const body = await c.req.json();
+      const { query, chain, priceMax, category, limit } = body;
+
+      if (!query) {
+        return c.json({ error: 'query required' }, 400);
+      }
+
+      const result = await discoverServices({ query, chain, priceMax, category, limit });
+
+      await log('service_discover', 'api/discover', {
+        query,
+        chain,
+        earned: '$0.01',
+      }, {
+        totalFound: result.totalFound,
+        returned: result.services.length,
+      });
+
+      return c.json(result);
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
+  // Cross-Chain Arbitrage Detection
+  app.post('/api/arbitrage', async (c) => {
+    try {
+      const body = await c.req.json();
+      const { pairs, minSpreadPercent, includeAnalysis, mode, chains } = body;
+
+      // Validate chain names if provided
+      const validChains = chains
+        ? (chains as string[]).filter(c => c in QUOTE_CHAINS)
+        : undefined;
+
+      const result = await detectArbitrage({ pairs, minSpreadPercent, includeAnalysis, mode, chains: validChains });
+
+      await log('service_arbitrage', 'api/arbitrage', {
+        pairsRequested: pairs,
+        minSpreadPercent,
+        earned: '$0.01',
+      }, {
+        opportunitiesFound: result.opportunities.length,
+      });
+
+      return c.json(result);
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
+  // Private Portfolio Rebalancer
+  app.post('/api/rebalance', async (c) => {
+    try {
+      const body = await c.req.json();
+      const { targets, dryRun, maxSlippage } = body;
+
+      if (!targets || !Array.isArray(targets) || targets.length === 0) {
+        return c.json({ error: 'targets array required (e.g., [{"symbol":"ETH","targetPercent":50}])' }, 400);
+      }
+
+      const result = await rebalancePortfolio({ targets, dryRun, maxSlippage });
+
+      await log('service_rebalance', 'api/rebalance', {
+        targetCount: targets.length,
+        dryRun: dryRun !== false,
+        earned: '$0.02',
+      }, {
+        swapCount: result.swaps.length,
+        executed: result.executed,
+        transactions: result.transactions.length,
+      });
+
+      return c.json({
+        portfolio: {
+          wallet: result.portfolio.wallet,
+          totalValueUSD: result.portfolio.totalValueUSD,
+          allocations: result.portfolio.allocations.map(a => ({
+            symbol: a.symbol,
+            balance: a.balanceFormatted,
+            valueUSD: Math.round(a.valueUSD * 100) / 100,
+            percent: a.percentOfTotal,
+          })),
+        },
+        swaps: result.swaps,
+        analysis: result.analysis,
+        executed: result.executed,
+        transactions: result.transactions,
+        privacy: 'venice-zero-retention',
+      });
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
   });
 
   return app;

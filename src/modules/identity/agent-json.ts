@@ -35,13 +35,27 @@ export function generateAgentJson(options: {
     supportedTrust: ['reputation', 'erc-8004', 'self-agent-id'],
     capabilities: {
       payments: ['x402-exact', 'x402-escrow'],
-      chains: ['eip155:8453', 'eip155:42220'], // Base + Celo
+      chains: [
+        'eip155:1',      // Ethereum
+        'eip155:8453',   // Base
+        'eip155:42161',  // Arbitrum
+        'eip155:137',    // Polygon
+        'eip155:10',     // Optimism
+        'eip155:42220',  // Celo
+        'eip155:56',     // BNB Chain
+        'eip155:43114',  // Avalanche
+        'eip155:81457',  // Blast
+        'eip155:480',    // World Chain
+      ],
       tokens: ['USDC'],
       llm: {
         general: 'bankr-gateway',
         private: 'venice-ai',
       },
       swaps: 'uniswap-trading-api',
+      discovery: 'x402-service-discovery',
+      arbitrage: 'cross-chain-arbitrage-detection',
+      rebalancing: 'private-portfolio-rebalancer',
     },
   };
 }

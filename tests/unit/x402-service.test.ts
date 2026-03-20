@@ -8,6 +8,18 @@ vi.mock('../../src/config.js', () => ({
     base: { chain: {}, rpc: 'https://mainnet.base.org', chainId: '8453' },
     celo: { chain: {}, rpc: 'https://forno.celo.org', chainId: '42220' },
   },
+  QUOTE_CHAINS: {
+    ethereum: { chainId: 1, name: 'Ethereum' },
+    base: { chainId: 8453, name: 'Base' },
+    arbitrum: { chainId: 42161, name: 'Arbitrum' },
+    polygon: { chainId: 137, name: 'Polygon' },
+    optimism: { chainId: 10, name: 'Optimism' },
+    celo: { chainId: 42220, name: 'Celo' },
+    bnb: { chainId: 56, name: 'BNB Chain' },
+    avalanche: { chainId: 43114, name: 'Avalanche' },
+    blast: { chainId: 81457, name: 'Blast' },
+    worldchain: { chainId: 480, name: 'World Chain' },
+  },
   TOKENS: {
     base: { ETH: '0x0000000000000000000000000000000000000000', USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' },
     celo: { CELO: '0x0000000000000000000000000000000000000000', USDC: '0xcebA9300f2b948710d2653dD7B07f33A8B32118C', cUSD: '0x765DE816845861e75A25fCA122bb6898B8B1282a' },
@@ -52,11 +64,14 @@ describe('x402 Service Routes', () => {
     expect(res.status).toBe(200);
     expect(data.version).toBe(2);
     expect(data.agent).toBe('AskJeev');
-    expect(data.endpoints).toHaveLength(4);
+    expect(data.endpoints).toHaveLength(7);
     expect(data.endpoints[0].path).toBe('/api/swap-quote');
     expect(data.endpoints[1].path).toBe('/api/balances');
     expect(data.endpoints[2].path).toBe('/api/private-analyze');
     expect(data.endpoints[3].path).toBe('/api/ask');
+    expect(data.endpoints[4].path).toBe('/api/discover');
+    expect(data.endpoints[5].path).toBe('/api/arbitrage');
+    expect(data.endpoints[6].path).toBe('/api/rebalance');
   });
 
   it('serves agent.json', async () => {

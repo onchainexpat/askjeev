@@ -4,13 +4,14 @@
 
 AskJeev is an autonomous economic agent on Base that demonstrates a complete self-sustaining loop:
 
-**Earn** → **Swap** → **Think** → **Serve** → **Repeat**
+**Earn** → **Detect** → **Swap** → **Think** → **Serve** → **Repeat**
 
-1. **Earns USDC** by hosting paid x402 API services (swap quotes, private analysis, multi-model reasoning)
-2. **Swaps tokens** via Uniswap Trading API when it needs a different asset
-3. **Thinks privately** using Venice AI for sensitive financial data (zero data retention)
-4. **Thinks generally** using Bankr LLM Gateway (20+ models, paid with USDC)
-5. **Serves other agents** through discoverable x402 endpoints
+1. **Earns USDC** by hosting paid x402 API services (swap quotes, arbitrage detection, private analysis, multi-model reasoning)
+2. **Detects cross-chain arbitrage** across 10 chains by comparing USDC→WETH rates via Uniswap Trading API (Ethereum, Base, Arbitrum, Polygon, Optimism, Celo, BNB, Avalanche, Blast, World Chain)
+3. **Swaps tokens** via Uniswap Trading API when it needs a different asset
+4. **Thinks privately** using Venice AI for sensitive financial data (zero data retention)
+5. **Thinks generally** using Bankr LLM Gateway (20+ models, paid with USDC)
+6. **Serves other agents** through discoverable x402 endpoints
 
 ## How to Interact
 
@@ -32,6 +33,16 @@ curl -X POST https://[DEPLOYED_URL]/api/private-analyze \
 # General reasoning (pay $0.01 USDC via x402)
 curl -X POST https://[DEPLOYED_URL]/api/ask \
   -d '{"prompt": "What is the current gas price trend on Base?"}'
+
+# Cross-chain arbitrage detection (pay $0.01 USDC via x402)
+curl -X POST https://[DEPLOYED_URL]/api/arbitrage \
+  -H "Content-Type: application/json" \
+  -d '{"mode": "cross-chain", "chains": ["ethereum", "base", "arbitrum"], "minSpreadPercent": 0.1}'
+
+# Full arbitrage scan — stablecoins + cross-chain (pay $0.01 USDC via x402)
+curl -X POST https://[DEPLOYED_URL]/api/arbitrage \
+  -H "Content-Type: application/json" \
+  -d '{"mode": "all"}'
 ```
 
 ### As a Judge
@@ -45,7 +56,7 @@ curl -X POST https://[DEPLOYED_URL]/api/ask \
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | Runtime | Node.js + TypeScript | Core execution |
-| Blockchain | Base (EVM) via viem | On-chain operations |
+| Blockchain | Base + 9 chains via viem | On-chain operations (quotes on 10 chains, txns on Base/Celo) |
 | Payments | x402 protocol (x402-wallet-mcp) | Autonomous service payments |
 | Swaps | Uniswap Trading API | Token exchange with real TxIDs |
 | Private AI | Venice AI | Zero-retention financial reasoning |
@@ -56,25 +67,25 @@ curl -X POST https://[DEPLOYED_URL]/api/ask \
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────┐
-│              AskJeev Agent                  │
-│       (autonomous economic loop)            │
-├─────────────────────────────────────────────┤
-│                                             │
-│  EARN          SWAP          THINK          │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
-│  │ x402     │  │ Uniswap  │  │ Venice   │  │
-│  │ Service  │  │ Trading  │  │ (private)│  │
-│  │ Endpoints│  │ API      │  │          │  │
-│  └──────────┘  └──────────┘  │ Bankr    │  │
-│                              │ (general)│  │
-│  IDENTITY                    └──────────┘  │
-│  ┌──────────┐                              │
-│  │ ERC-8004 │                              │
-│  │ agent.json│                             │
-│  │ logs     │                              │
-│  └──────────┘                              │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│                   AskJeev Agent                      │
+│            (autonomous economic loop)                │
+├──────────────────────────────────────────────────────┤
+│                                                      │
+│  EARN           SWAP            THINK                │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐         │
+│  │ x402     │   │ Uniswap  │   │ Venice   │         │
+│  │ Service  │   │ Trading  │   │ (private)│         │
+│  │ Endpoints│   │ API      │   │          │         │
+│  └──────────┘   └──────────┘   │ Bankr    │         │
+│                                │ (general)│         │
+│  DETECT          IDENTITY      └──────────┘         │
+│  ┌──────────┐   ┌──────────┐                        │
+│  │ Arbitrage│   │ ERC-8004 │                        │
+│  │ 10 chains│   │ agent.json│                       │
+│  │ WETH/USDC│   │ logs     │                        │
+│  └──────────┘   └──────────┘                        │
+└──────────────────────────────────────────────────────┘
 ```
 
 ## Self-Sustaining Economics

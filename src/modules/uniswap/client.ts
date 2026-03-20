@@ -1,4 +1,5 @@
-import { UNISWAP_API_BASE, UNISWAP_API_KEY, CHAINS, getWalletClient, getAccount } from '../../config.js';
+import { UNISWAP_API_BASE, UNISWAP_API_KEY, CHAINS, QUOTE_CHAINS, getWalletClient, getAccount } from '../../config.js';
+import type { ChainName, WalletChainName } from '../../config.js';
 import type { Address } from 'viem';
 
 const headers = {
@@ -34,6 +35,7 @@ export async function checkApproval(
   token: Address,
   amount: string,
   walletAddress: Address,
+  chain: WalletChainName = 'base',
 ): Promise<{ approvalNeeded: boolean; tx?: Record<string, any> }> {
   const res = await fetch(`${UNISWAP_API_BASE}/check_approval`, {
     method: 'POST',
@@ -42,7 +44,7 @@ export async function checkApproval(
       walletAddress,
       token,
       amount,
-      chainId: 8453,
+      chainId: Number(CHAINS[chain].chainId),
     }),
   });
 
@@ -66,9 +68,9 @@ export async function getQuote(
   tokenOut: Address,
   amount: string,
   swapper: Address,
-  chain: 'base' | 'celo' = 'base',
+  chain: ChainName = 'base',
 ): Promise<SwapQuote> {
-  const chainId = CHAINS[chain].chainId;
+  const chainId = QUOTE_CHAINS[chain].chainId;
   const res = await fetch(`${UNISWAP_API_BASE}/quote`, {
     method: 'POST',
     headers,
@@ -180,7 +182,7 @@ export async function executeSwap(quoteResponse: SwapQuote): Promise<SwapResult>
 /**
  * Check ERC20 token balance.
  */
-export async function getTokenBalance(token: Address, wallet: Address, chain: 'base' | 'celo' = 'base'): Promise<string> {
+export async function getTokenBalance(token: Address, wallet: Address, chain: WalletChainName = 'base'): Promise<string> {
   const { getPublicClient } = await import('../../config.js');
   const client = getPublicClient(chain);
 

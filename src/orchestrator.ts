@@ -21,6 +21,9 @@ import { getQuote, executeSwap, checkApproval, getTokenBalance } from './modules
 import { analyzePrivately } from './modules/venice/client.js';
 import { chat as bankrChat } from './modules/bankr/client.js';
 import { log, getLogSummary } from './modules/identity/logger.js';
+import { discoverServices } from './modules/discovery/service.js';
+import { detectArbitrage } from './modules/arbitrage/service.js';
+import { rebalancePortfolio } from './modules/rebalance/service.js';
 import type { Address } from 'viem';
 import { formatEther, formatUnits, parseEther, parseUnits } from 'viem';
 
@@ -169,6 +172,36 @@ async function decide(state: OrchestratorState, analysis: string): Promise<Array
     action: 'call_x402_service',
     params: {},
     reason: 'Consuming an x402 service to demonstrate autonomous service discovery and payment',
+  });
+
+  // Decision 6: Discover x402 services in the ecosystem
+  actions.push({
+    action: 'discover_services',
+    params: { query: 'swap trading DeFi' },
+    reason: 'Searching the agent economy for relevant x402 services — building market awareness',
+  });
+
+  // Decision 7: Check for cross-chain arbitrage opportunities
+  actions.push({
+    action: 'detect_arbitrage',
+    params: { minSpreadPercent: 0.1 },
+    reason: 'Scanning Base↔Celo for price discrepancies — seeking trading alpha',
+  });
+
+  // Decision 8: Analyze portfolio and generate rebalance plan
+  actions.push({
+    action: 'rebalance_portfolio',
+    params: {
+      targets: [
+        { symbol: 'ETH', targetPercent: 40 },
+        { symbol: 'USDC (Base)', targetPercent: 40 },
+        { symbol: 'CELO', targetPercent: 5 },
+        { symbol: 'cUSD', targetPercent: 10 },
+        { symbol: 'USDC (Celo)', targetPercent: 5 },
+      ],
+      dryRun: true,
+    },
+    reason: 'Generating private rebalance plan via Venice — analyzing optimal allocation',
   });
 
   for (const a of actions) {
@@ -372,6 +405,95 @@ async function execute(state: OrchestratorState, actions: Array<{ action: string
           } catch (e: any) {
             console.log(`  Service call failed: ${e.message}`);
             await log('x402_service_call', 'orchestrator', {}, { error: e.message }, { success: false, decision: action.reason });
+          }
+          break;
+        }
+
+        case 'discover_services': {
+          console.log(`\n  Discovering x402 services in the agent economy...`);
+          try {
+            const result = await discoverServices({
+              query: action.params.query,
+              limit: 5,
+            });
+            console.log(`  Found ${result.totalFound} services, returning top ${result.services.length}:`);
+            for (const svc of result.services.slice(0, 3)) {
+              console.log(`    → ${svc.name || svc.domain}: ${svc.endpoints.length} endpoints (score: ${svc.relevanceScore})`);
+            }
+
+            await log('discover_services', 'orchestrator', {
+              query: action.params.query,
+            }, {
+              totalFound: result.totalFound,
+              topServices: result.services.slice(0, 3).map(s => s.domain),
+            }, { decision: action.reason });
+          } catch (e: any) {
+            console.log(`  Discovery failed: ${e.message}`);
+            await log('discover_services', 'orchestrator', {}, { error: e.message }, { success: false, decision: action.reason });
+          }
+          break;
+        }
+
+        case 'detect_arbitrage': {
+          console.log(`\n  Scanning for cross-chain arbitrage opportunities...`);
+          try {
+            const result = await detectArbitrage({
+              minSpreadPercent: action.params.minSpreadPercent || 0.1,
+              includeAnalysis: true,
+              mode: 'all',
+            });
+            console.log(`  Checked ${result.pairsChecked} pairs, found ${result.opportunities.length} opportunities`);
+            for (const opp of result.opportunities.slice(0, 3)) {
+              console.log(`    → ${opp.pair}: ${opp.spreadPercent}% spread (${opp.direction})`);
+            }
+            if (result.analysis) {
+              console.log(`  Venice: ${result.analysis.substring(0, 150)}`);
+            }
+
+            await log('detect_arbitrage', 'orchestrator', {
+              minSpreadPercent: action.params.minSpreadPercent,
+            }, {
+              pairsChecked: result.pairsChecked,
+              opportunities: result.opportunities.length,
+              topSpread: result.opportunities[0]?.spreadPercent ?? 0,
+            }, { decision: action.reason });
+          } catch (e: any) {
+            console.log(`  Arbitrage detection failed: ${e.message}`);
+            await log('detect_arbitrage', 'orchestrator', {}, { error: e.message }, { success: false, decision: action.reason });
+          }
+          break;
+        }
+
+        case 'rebalance_portfolio': {
+          console.log(`\n  Analyzing portfolio for rebalancing (dry run)...`);
+          try {
+            const result = await rebalancePortfolio({
+              targets: action.params.targets,
+              dryRun: action.params.dryRun !== false,
+            });
+            console.log(`  Portfolio value: $${result.portfolio.totalValueUSD.toFixed(2)}`);
+            for (const alloc of result.portfolio.allocations) {
+              console.log(`    ${alloc.symbol}: ${alloc.balanceFormatted} ($${alloc.valueUSD.toFixed(2)}, ${alloc.percentOfTotal}%)`);
+            }
+            console.log(`  Rebalance swaps needed: ${result.swaps.length}`);
+            for (const swap of result.swaps) {
+              console.log(`    → ${swap.from} → ${swap.to}: $${swap.amountUSD}`);
+            }
+            if (result.analysis) {
+              console.log(`  Venice: ${result.analysis.substring(0, 150)}`);
+            }
+
+            await log('rebalance_portfolio', 'orchestrator', {
+              targetCount: action.params.targets.length,
+              dryRun: action.params.dryRun !== false,
+            }, {
+              totalValueUSD: result.portfolio.totalValueUSD,
+              swapsNeeded: result.swaps.length,
+              executed: result.executed,
+            }, { decision: action.reason });
+          } catch (e: any) {
+            console.log(`  Rebalance analysis failed: ${e.message}`);
+            await log('rebalance_portfolio', 'orchestrator', {}, { error: e.message }, { success: false, decision: action.reason });
           }
           break;
         }

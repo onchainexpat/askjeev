@@ -8,6 +8,18 @@ vi.mock('../../src/config.js', () => ({
     base: { chain: {}, rpc: 'https://mainnet.base.org', chainId: '8453' },
     celo: { chain: {}, rpc: 'https://forno.celo.org', chainId: '42220' },
   },
+  QUOTE_CHAINS: {
+    ethereum: { chainId: 1, name: 'Ethereum' },
+    base: { chainId: 8453, name: 'Base' },
+    arbitrum: { chainId: 42161, name: 'Arbitrum' },
+    polygon: { chainId: 137, name: 'Polygon' },
+    optimism: { chainId: 10, name: 'Optimism' },
+    celo: { chainId: 42220, name: 'Celo' },
+    bnb: { chainId: 56, name: 'BNB Chain' },
+    avalanche: { chainId: 43114, name: 'Avalanche' },
+    blast: { chainId: 81457, name: 'Blast' },
+    worldchain: { chainId: 480, name: 'World Chain' },
+  },
   TOKENS: {
     base: {
       ETH: '0x0000000000000000000000000000000000000000',
@@ -87,6 +99,28 @@ describe('Uniswap Module', () => {
         checkApproval('0xtoken', '1000', '0xwallet'),
       ).rejects.toThrow('check_approval failed (400)');
     });
+
+    it('sends correct chainId for celo', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ approval: null }),
+      }) as any;
+
+      const { checkApproval } = await import('../../src/modules/uniswap/client.js');
+      await checkApproval(
+        '0xcebA9300f2b948710d2653dD7B07f33A8B32118C',
+        '1000000',
+        '0x1234567890123456789012345678901234567890',
+        'celo',
+      );
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://trade-api.gateway.uniswap.org/v1/check_approval',
+        expect.objectContaining({
+          body: expect.stringContaining('"chainId":42220'),
+        }),
+      );
+    });
   });
 
   describe('getQuote', () => {
@@ -137,7 +171,25 @@ describe('Uniswap Module', () => {
         'https://trade-api.gateway.uniswap.org/v1/quote',
         expect.objectContaining({
           method: 'POST',
-          body: expect.stringContaining('"tokenInChainId":"8453"'),
+          body: expect.stringContaining('"tokenInChainId":8453'),
+        }),
+      );
+    });
+
+    it('sends correct chainId for arbitrum', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ routing: 'CLASSIC', quote: {} }),
+      }) as any;
+
+      const { getQuote } = await import('../../src/modules/uniswap/client.js');
+      await getQuote('0xIN', '0xOUT', '1000', '0xSWAPPER', 'arbitrum');
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://trade-api.gateway.uniswap.org/v1/quote',
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.stringContaining('"tokenInChainId":42161'),
         }),
       );
     });

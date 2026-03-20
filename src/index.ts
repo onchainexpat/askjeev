@@ -23,3 +23,11 @@ export { createRoutes } from './modules/x402-service/routes.js';
 export { getQuote, executeSwap, checkApproval, getTokenBalance } from './modules/uniswap/client.js';
 export { chat as bankrChat, listModels as bankrModels } from './modules/bankr/client.js';
 export { analyzePrivately, privateReason, listModels as veniceModels } from './modules/venice/client.js';
+
+// New feature modules
+export { queryX402Scan, fetchX402Manifest } from './modules/discovery/client.js';
+export { discoverServices } from './modules/discovery/service.js';
+export { getQuoteRate, getComparablePairs, getCrossChainPairs } from './modules/arbitrage/client.js';
+export { detectArbitrage } from './modules/arbitrage/service.js';
+export { getCurrentAllocations, computeRebalanceSwaps, fetchLivePrices } from './modules/rebalance/client.js';
+export { rebalancePortfolio } from './modules/rebalance/service.js';

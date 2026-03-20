@@ -7,6 +7,18 @@ vi.mock('../../src/config.js', () => ({
     base: { chain: {}, rpc: 'https://mainnet.base.org', chainId: '8453' },
     celo: { chain: {}, rpc: 'https://forno.celo.org', chainId: '42220' },
   },
+  QUOTE_CHAINS: {
+    ethereum: { chainId: 1, name: 'Ethereum' },
+    base: { chainId: 8453, name: 'Base' },
+    arbitrum: { chainId: 42161, name: 'Arbitrum' },
+    polygon: { chainId: 137, name: 'Polygon' },
+    optimism: { chainId: 10, name: 'Optimism' },
+    celo: { chainId: 42220, name: 'Celo' },
+    bnb: { chainId: 56, name: 'BNB Chain' },
+    avalanche: { chainId: 43114, name: 'Avalanche' },
+    blast: { chainId: 81457, name: 'Blast' },
+    worldchain: { chainId: 480, name: 'World Chain' },
+  },
   TOKENS: {
     base: { ETH: '0x0000000000000000000000000000000000000000', USDC: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' },
     celo: { CELO: '0x0000000000000000000000000000000000000000', cUSD: '0x765DE816845861e75A25fCA122bb6898B8B1282a', USDC: '0xcebA9300f2b948710d2653dD7B07f33A8B32118C' },
@@ -40,8 +52,8 @@ describe('Celo Cross-Chain Support', () => {
       await getQuote('0x0' as any, '0xcUSD' as any, '1000000000000000000', '0xswapper' as any, 'celo');
 
       const body = JSON.parse((global.fetch as any).mock.calls[0][1].body);
-      expect(body.tokenInChainId).toBe('42220');
-      expect(body.tokenOutChainId).toBe('42220');
+      expect(body.tokenInChainId).toBe(42220);
+      expect(body.tokenOutChainId).toBe(42220);
     });
 
     it('defaults to Base chain', async () => {
@@ -54,7 +66,7 @@ describe('Celo Cross-Chain Support', () => {
       await getQuote('0x0' as any, '0xUSDC' as any, '100', '0xswapper' as any);
 
       const body = JSON.parse((global.fetch as any).mock.calls[0][1].body);
-      expect(body.tokenInChainId).toBe('8453');
+      expect(body.tokenInChainId).toBe(8453);
     });
   });
 
@@ -118,6 +130,8 @@ describe('Cross-chain service routes', () => {
 
     expect(data.supportedChains).toContain('base (8453)');
     expect(data.supportedChains).toContain('celo (42220)');
+    expect(data.supportedChains).toContain('ethereum (1)');
+    expect(data.supportedChains).toHaveLength(10);
   });
 
   it('self-status endpoint works', async () => {
