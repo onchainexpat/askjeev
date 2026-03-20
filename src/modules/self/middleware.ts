@@ -44,8 +44,6 @@ export function selfAgentAuth(options: {
         const { SelfAgentVerifier } = await import('@selfxyz/agent-sdk');
         verifier = SelfAgentVerifier.create()
           .network(network)
-          .requireAge(18)
-          .requireOFAC()
           .sybilLimit(3)
           .rateLimit({ perMinute: 30 })
           .build();
