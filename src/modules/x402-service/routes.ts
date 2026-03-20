@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import { getQuote } from '../uniswap/client.js';
-import { analyzePrivately } from '../venice/client.js';
+import { getQuote, getLimitOrderQuote, getBridgeQuote } from '../uniswap/client.js';
+import { analyzePrivately, generateImage } from '../venice/client.js';
 import { chat } from '../bankr/client.js';
 import { getAccount } from '../../config.js';
 import { log } from '../identity/logger.js';
@@ -77,13 +77,15 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 <body>
 <div class="container">
   <h1>AskJeev <span class="badge">live</span></h1>
-  <p class="tagline">Autonomous agent butler — earns, detects arbitrage across 10 chains, swaps, reasons privately, and serves other agents on Base.</p>
+  <p class="tagline">Autonomous agent butler — earns, detects arbitrage across 18 chains, swaps, generates images, bridges cross-chain, and serves other agents on Base.</p>
 
   <div class="loop">
     <span>Earn (x402)</span><span class="arrow">→</span>
-    <span>Detect (10 chains)</span><span class="arrow">→</span>
+    <span>Detect (18 chains)</span><span class="arrow">→</span>
     <span>Swap (Uniswap)</span><span class="arrow">→</span>
+    <span>Bridge (Across)</span><span class="arrow">→</span>
     <span>Think (Venice/Bankr)</span><span class="arrow">→</span>
+    <span>Create (Venice Images)</span><span class="arrow">→</span>
     <span>Serve</span><span class="arrow">→</span>
     <span>Repeat</span>
   </div>
@@ -160,6 +162,9 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     <tr><td>/api/ask</td><td>POST</td><td class="price">$0.01</td><td>Bankr multi-model reasoning (20+ models)</td></tr>
     <tr><td>/api/rebalance</td><td>POST</td><td class="price">$0.02</td><td>Private portfolio rebalancer</td></tr>
     <tr><td>/api/discover</td><td>POST</td><td class="price">$0.01</td><td>x402 service discovery</td></tr>
+    <tr><td>/api/generate-image</td><td>POST</td><td class="price">$0.03</td><td>Uncensored image generation (Self 18+ only)</td></tr>
+    <tr><td>/api/limit-order</td><td>POST</td><td class="price">$0.01</td><td>Gasless limit order via UniswapX</td></tr>
+    <tr><td>/api/bridge</td><td>POST</td><td class="price">$0.01</td><td>Cross-chain bridge via Across Protocol</td></tr>
   </table>
 
   <h2>Free Endpoints</h2>
@@ -186,6 +191,14 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     <span class="chain">Avalanche</span>
     <span class="chain">Blast</span>
     <span class="chain">World Chain</span>
+    <span class="chain">Unichain</span>
+    <span class="chain">zkSync</span>
+    <span class="chain">Linea</span>
+    <span class="chain">Zora</span>
+    <span class="chain">Monad</span>
+    <span class="chain">X Layer</span>
+    <span class="chain">Soneium</span>
+    <span class="chain">Tempo</span>
   </div>
 
   <h2>Try It</h2>
@@ -293,6 +306,30 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
           network: 'base',
           description: 'Private portfolio rebalancer — Venice-analyzed with optional auto-execution.',
         },
+        {
+          path: '/api/generate-image',
+          method: 'POST',
+          price: '$0.03',
+          currency: 'USDC',
+          network: 'base',
+          description: 'Private uncensored image generation via Venice AI. Requires Self Agent ID (18+ age-verified via ZK passport proof).',
+        },
+        {
+          path: '/api/limit-order',
+          method: 'POST',
+          price: '$0.01',
+          currency: 'USDC',
+          network: 'base',
+          description: 'Gasless limit order via UniswapX filler network. Set price targets with zero gas cost.',
+        },
+        {
+          path: '/api/bridge',
+          method: 'POST',
+          price: '$0.01',
+          currency: 'USDC',
+          network: 'base',
+          description: 'Cross-chain bridge quote via Across Protocol (ERC-7683). Move tokens between any supported chains.',
+        },
       ],
       payTo: getAccount().address,
       selfAgentIdSupported: process.env.SELF_ENABLED === 'true',
@@ -337,6 +374,9 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
           'POST /api/discover': makeConfig('0.01', 'x402 service discovery — Venice-ranked search'),
           'POST /api/arbitrage': makeConfig('0.01', 'Cross-chain arbitrage detection between Base and Celo'),
           'POST /api/rebalance': makeConfig('0.02', 'Private portfolio rebalancer with optional auto-execution'),
+          'POST /api/generate-image': makeConfig('0.03', 'Private uncensored image generation via Venice AI (Self-verified 18+ only)'),
+          'POST /api/limit-order': makeConfig('0.01', 'Gasless limit order via UniswapX filler network'),
+          'POST /api/bridge': makeConfig('0.01', 'Cross-chain bridge quote via Across Protocol'),
         },
         resourceServer,
       ),
@@ -670,6 +710,143 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
         executed: result.executed,
         transactions: result.transactions,
         privacy: 'venice-zero-retention',
+      });
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
+  // Private Image Generation (Self-verified 18+ only — uncensored via Venice)
+  app.post('/api/generate-image', async (c) => {
+    try {
+      const selfAgent = (c as any).get('selfAgent');
+      if (!selfAgent?.verified) {
+        return c.json({
+          error: 'Self Agent ID verification required for image generation (18+ age-verified via ZK passport proof)',
+          docs: 'https://docs.self.xyz/agent-id',
+          reason: 'Uncensored image generation is gated behind Self Protocol proof-of-human to verify age >= 18',
+        }, 403);
+      }
+
+      const body = await c.req.json();
+      const { prompt, negativePrompt, model, width, height, steps, stylePreset } = body;
+
+      if (!prompt) {
+        return c.json({ error: 'prompt required' }, 400);
+      }
+
+      const result = await generateImage(prompt, {
+        model: model || 'chroma',
+        negativePrompt,
+        width,
+        height,
+        steps,
+        stylePreset,
+      });
+
+      await log('service_generate_image', 'api/generate-image', {
+        promptLength: prompt.length,
+        model: model || 'chroma',
+        selfVerified: true,
+        earned: '$0.03',
+      }, {
+        imagesGenerated: result.images.length,
+      });
+
+      return c.json({
+        images: result.images,
+        model: result.model,
+        privacy: 'venice-zero-retention',
+        selfVerified: true,
+        note: 'Uncensored generation — caller age-verified via Self Agent ID ZK passport proof',
+      });
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
+  // Gasless Limit Order (UniswapX)
+  app.post('/api/limit-order', async (c) => {
+    try {
+      const body = await c.req.json();
+      const { tokenIn, tokenOut, amount, limitPrice, chain, deadlineSeconds } = body;
+
+      if (!tokenIn || !tokenOut || !amount || !limitPrice) {
+        return c.json({ error: 'tokenIn, tokenOut, amount, and limitPrice required' }, 400);
+      }
+
+      const targetChain = (chain && chain in QUOTE_CHAINS) ? chain : 'base';
+      const account = getAccount();
+
+      const quote = await getLimitOrderQuote(
+        tokenIn as Address,
+        tokenOut as Address,
+        amount,
+        account.address,
+        limitPrice,
+        targetChain,
+        deadlineSeconds || 86400,
+      );
+
+      await log('service_limit_order', 'api/limit-order', {
+        tokenIn, tokenOut, amount, limitPrice,
+        chain: targetChain,
+        earned: '$0.01',
+      }, {
+        routing: quote.routing,
+      });
+
+      return c.json({
+        ...quote,
+        gasless: true,
+        note: 'Limit order via UniswapX — gasless execution by filler network',
+      });
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
+  // Cross-Chain Bridge Quote (Across Protocol via Uniswap)
+  app.post('/api/bridge', async (c) => {
+    try {
+      const body = await c.req.json();
+      const { tokenIn, tokenOut, amount, chainIn, chainOut } = body;
+
+      if (!tokenIn || !tokenOut || !amount || !chainIn || !chainOut) {
+        return c.json({ error: 'tokenIn, tokenOut, amount, chainIn, and chainOut required' }, 400);
+      }
+
+      if (!(chainIn in QUOTE_CHAINS) || !(chainOut in QUOTE_CHAINS)) {
+        return c.json({ error: 'Invalid chain name', supportedChains: Object.keys(QUOTE_CHAINS) }, 400);
+      }
+
+      if (chainIn === chainOut) {
+        return c.json({ error: 'chainIn and chainOut must be different — use /api/swap-quote for same-chain swaps' }, 400);
+      }
+
+      const account = getAccount();
+
+      const quote = await getBridgeQuote(
+        tokenIn as Address,
+        tokenOut as Address,
+        amount,
+        account.address,
+        chainIn,
+        chainOut,
+      );
+
+      await log('service_bridge', 'api/bridge', {
+        tokenIn, tokenOut, amount,
+        chainIn, chainOut,
+        earned: '$0.01',
+      }, {
+        routing: quote.routing,
+      });
+
+      return c.json({
+        ...quote,
+        bridge: 'across-protocol',
+        note: 'Cross-chain bridge via Across Protocol (ERC-7683 intent standard)',
       });
     } catch (err: any) {
       return c.json({ error: err.message }, 500);

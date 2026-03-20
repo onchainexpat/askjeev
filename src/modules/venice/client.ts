@@ -87,6 +87,64 @@ export async function analyzePrivately(prompt: string, context?: string): Promis
 }
 
 /**
+ * Generate an image via Venice AI — zero data retention.
+ * Uses Chroma model with safe_mode off for uncensored generation.
+ * Intended for Self-verified 18+ agents only.
+ */
+export async function generateImage(
+  prompt: string,
+  options: {
+    model?: string;
+    negativePrompt?: string;
+    width?: number;
+    height?: number;
+    steps?: number;
+    cfgScale?: number;
+    stylePreset?: string;
+  } = {},
+): Promise<{ images: string[]; model: string }> {
+  const {
+    model = 'chroma',
+    negativePrompt,
+    width = 1024,
+    height = 1024,
+    steps = 25,
+    cfgScale = 7,
+    stylePreset,
+  } = options;
+
+  const res = await fetch(`${VENICE_API_BASE}/image/generate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${VENICE_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model,
+      prompt,
+      negative_prompt: negativePrompt,
+      width,
+      height,
+      steps,
+      cfg_scale: cfgScale,
+      safe_mode: false,
+      hide_watermark: false,
+      return_binary: false,
+      ...(stylePreset && { style_preset: stylePreset }),
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Venice image API error (${res.status}): ${err}`);
+  }
+
+  const data = await res.json();
+  const images = (data.images || data.data || []).map((img: any) => img.url || img.b64_json || img);
+  return { images, model };
+}
+
+/**
  * Get available Venice models.
  */
 export async function listModels(): Promise<string[]> {

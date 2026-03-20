@@ -64,7 +64,7 @@ describe('x402 Service Routes', () => {
     expect(res.status).toBe(200);
     expect(data.version).toBe(2);
     expect(data.agent).toBe('AskJeev');
-    expect(data.endpoints).toHaveLength(7);
+    expect(data.endpoints).toHaveLength(10);
     expect(data.endpoints[0].path).toBe('/api/swap-quote');
     expect(data.endpoints[1].path).toBe('/api/balances');
     expect(data.endpoints[2].path).toBe('/api/private-analyze');
@@ -72,6 +72,9 @@ describe('x402 Service Routes', () => {
     expect(data.endpoints[4].path).toBe('/api/discover');
     expect(data.endpoints[5].path).toBe('/api/arbitrage');
     expect(data.endpoints[6].path).toBe('/api/rebalance');
+    expect(data.endpoints[7].path).toBe('/api/generate-image');
+    expect(data.endpoints[8].path).toBe('/api/limit-order');
+    expect(data.endpoints[9].path).toBe('/api/bridge');
   });
 
   it('serves agent.json', async () => {

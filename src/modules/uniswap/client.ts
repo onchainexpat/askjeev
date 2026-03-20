@@ -180,6 +180,84 @@ export async function executeSwap(quoteResponse: SwapQuote): Promise<SwapResult>
 }
 
 /**
+ * Get a limit order quote from Uniswap Trading API.
+ * Gasless execution via UniswapX filler network.
+ */
+export async function getLimitOrderQuote(
+  tokenIn: Address,
+  tokenOut: Address,
+  amount: string,
+  swapper: Address,
+  limitPrice: string,
+  chain: ChainName = 'base',
+  deadlineSeconds: number = 86400,
+): Promise<Record<string, any>> {
+  const chainId = QUOTE_CHAINS[chain].chainId;
+  const res = await fetch(`${UNISWAP_API_BASE}/limit_order_quote`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      swapper,
+      tokenIn,
+      tokenOut,
+      tokenInChainId: chainId,
+      tokenOutChainId: chainId,
+      amount,
+      type: 'EXACT_INPUT',
+      limitPrice,
+      orderDeadline: Math.floor(Date.now() / 1000) + deadlineSeconds,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`limit_order_quote failed (${res.status}): ${err}`);
+  }
+
+  return res.json();
+}
+
+/**
+ * Get a cross-chain bridge quote from Uniswap Trading API.
+ * Uses Across Protocol (ERC-7683) for cross-chain intent settlement.
+ */
+export async function getBridgeQuote(
+  tokenIn: Address,
+  tokenOut: Address,
+  amount: string,
+  swapper: Address,
+  chainIn: ChainName,
+  chainOut: ChainName,
+): Promise<Record<string, any>> {
+  const res = await fetch(`${UNISWAP_API_BASE}/quote`, {
+    method: 'POST',
+    headers: {
+      ...headers,
+      'x-chained-actions-enabled': 'true',
+    },
+    body: JSON.stringify({
+      swapper,
+      tokenIn,
+      tokenOut,
+      tokenInChainId: QUOTE_CHAINS[chainIn].chainId,
+      tokenOutChainId: QUOTE_CHAINS[chainOut].chainId,
+      amount,
+      type: 'EXACT_INPUT',
+      slippageTolerance: 0.5,
+      routingPreference: 'BEST_PRICE',
+      urgency: 'normal',
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`bridge quote failed (${res.status}): ${err}`);
+  }
+
+  return res.json();
+}
+
+/**
  * Check ERC20 token balance.
  */
 export async function getTokenBalance(token: Address, wallet: Address, chain: WalletChainName = 'base'): Promise<string> {
