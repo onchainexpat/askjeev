@@ -162,6 +162,9 @@ export function getCrossChainPairs(chains?: ChainName[]): ComparablePair[] {
       const tokensA = QUOTE_TOKENS[chainA];
       const tokensB = QUOTE_TOKENS[chainB];
 
+      // Skip chains without USDC/WETH token config (e.g., Tempo)
+      if (!tokensA || !tokensB) continue;
+
       pairs.push({
         name: `WETH price: ${QUOTE_CHAINS[chainA].name} vs ${QUOTE_CHAINS[chainB].name}`,
         description: `Compare USDC→WETH rate on ${QUOTE_CHAINS[chainA].name} vs ${QUOTE_CHAINS[chainB].name}. Rate difference = cross-chain arbitrage signal.`,

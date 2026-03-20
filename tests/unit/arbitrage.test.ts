@@ -11,6 +11,14 @@ const MOCK_QUOTE_CHAINS = {
   avalanche: { chainId: 43114, name: 'Avalanche' },
   blast: { chainId: 81457, name: 'Blast' },
   worldchain: { chainId: 480, name: 'World Chain' },
+  unichain: { chainId: 130, name: 'Unichain' },
+  zksync: { chainId: 324, name: 'zkSync' },
+  linea: { chainId: 59144, name: 'Linea' },
+  zora: { chainId: 7777777, name: 'Zora' },
+  monad: { chainId: 143, name: 'Monad' },
+  xlayer: { chainId: 196, name: 'X Layer' },
+  soneium: { chainId: 1868, name: 'Soneium' },
+  tempo: { chainId: 4217, name: 'Tempo' },
 };
 
 const MOCK_QUOTE_TOKENS = {
@@ -54,6 +62,34 @@ const MOCK_QUOTE_TOKENS = {
     USDC: { address: '0x79A02482A880bCE3B13e09Da970dC34db4CD24d1', decimals: 6 },
     WETH: { address: '0x4200000000000000000000000000000000000006', decimals: 18 },
   },
+  unichain: {
+    USDC: { address: '0x078D782b760474a361dDA0AF3839290b0EF57AD6', decimals: 6 },
+    WETH: { address: '0x4200000000000000000000000000000000000006', decimals: 18 },
+  },
+  zksync: {
+    USDC: { address: '0x1d17CBcF0D6D143135aE902365D2E5e2A16538D4', decimals: 6 },
+    WETH: { address: '0x5AEa5775959fBC2557Cc8789bC1bf90A239D9a91', decimals: 18 },
+  },
+  linea: {
+    USDC: { address: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff', decimals: 6 },
+    WETH: { address: '0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f', decimals: 18 },
+  },
+  zora: {
+    USDC: { address: '0xCccCcccc7021b32EBb4e8C08314bD62F7c653EC4', decimals: 6 },
+    WETH: { address: '0x4200000000000000000000000000000000000006', decimals: 18 },
+  },
+  monad: {
+    USDC: { address: '0x754704Bc059F8C67012fEd69BC8A327a5aafb603', decimals: 6 },
+    WETH: { address: '0xee8c0e9f1bffb4eb878d8f15f368a02a35481242', decimals: 18 },
+  },
+  xlayer: {
+    USDC: { address: '0x74b7F16337b8972027F6196A17a631aC6dE26d22', decimals: 6 },
+    WETH: { address: '0x5A77f1443D16ee5761d310e38b62f77f726bC71c', decimals: 18 },
+  },
+  soneium: {
+    USDC: { address: '0xbA9986D2381edf1DA03B0B9c1f8b00dc4AacC369', decimals: 6 },
+    WETH: { address: '0x4200000000000000000000000000000000000006', decimals: 18 },
+  },
 };
 
 vi.mock('../../src/config.js', () => ({
@@ -80,7 +116,7 @@ vi.mock('../../src/config.js', () => ({
   QUOTE_CHAINS: MOCK_QUOTE_CHAINS,
   QUOTE_TOKENS: MOCK_QUOTE_TOKENS,
   DEFAULT_CROSS_CHAIN_CHAINS: ['ethereum', 'base', 'arbitrum', 'polygon', 'optimism'],
-  ALL_CROSS_CHAIN_CHAINS: ['ethereum', 'base', 'arbitrum', 'polygon', 'optimism', 'celo', 'bnb', 'avalanche', 'blast', 'worldchain'],
+  ALL_CROSS_CHAIN_CHAINS: ['ethereum', 'base', 'arbitrum', 'polygon', 'optimism', 'celo', 'bnb', 'avalanche', 'blast', 'worldchain', 'unichain', 'zksync', 'linea', 'zora', 'monad', 'xlayer', 'soneium'],
   UNISWAP_API_BASE: 'https://trade-api.gateway.uniswap.org/v1',
   UNISWAP_API_KEY: 'test',
   VENICE_API_BASE: 'https://api.venice.ai/api/v1',
@@ -483,9 +519,9 @@ describe('Arbitrage Service', () => {
   it('detectArbitrage uses premium defaults when selfVerified=true', async () => {
     const { detectArbitrage } = await import('../../src/modules/arbitrage/service.js');
 
-    // selfVerified=true with mode=cross-chain should use all 10 chains → C(10,2)=45 pairs → 90 quotes
+    // selfVerified=true with mode=cross-chain should use all 17 chains (with WETH) → C(17,2)=136 pairs → 272 quotes
     // All return same rate → no opportunities
-    for (let i = 0; i < 90; i++) {
+    for (let i = 0; i < 272; i++) {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({
@@ -501,8 +537,8 @@ describe('Arbitrage Service', () => {
       minSpreadPercent: 50, // high threshold so no opportunities
     });
 
-    // Premium: all 10 chains → 45 pairs
-    expect(result.pairsChecked).toBe(45);
+    // Premium: all 17 chains (with WETH) → 136 pairs
+    expect(result.pairsChecked).toBe(136);
   });
 
   it('detectArbitrage uses standard defaults when selfVerified=false', async () => {

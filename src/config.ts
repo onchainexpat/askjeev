@@ -47,19 +47,28 @@ export const QUOTE_CHAINS = {
   avalanche: { chainId: 43114, name: 'Avalanche' },
   blast: { chainId: 81457, name: 'Blast' },
   worldchain: { chainId: 480, name: 'World Chain' },
+  unichain: { chainId: 130, name: 'Unichain' },
+  zksync: { chainId: 324, name: 'zkSync' },
+  linea: { chainId: 59144, name: 'Linea' },
+  zora: { chainId: 7777777, name: 'Zora' },
+  monad: { chainId: 143, name: 'Monad' },
+  xlayer: { chainId: 196, name: 'X Layer' },
+  soneium: { chainId: 1868, name: 'Soneium' },
+  tempo: { chainId: 4217, name: 'Tempo' },
 } as const;
 
 export type ChainName = keyof typeof QUOTE_CHAINS;
 export type WalletChainName = 'base' | 'celo';
 
 export const DEFAULT_CROSS_CHAIN_CHAINS: ChainName[] = ['ethereum', 'base', 'arbitrum', 'polygon', 'optimism'];
-export const ALL_CROSS_CHAIN_CHAINS: ChainName[] = Object.keys(QUOTE_CHAINS) as ChainName[];
+export const ALL_CROSS_CHAIN_CHAINS: ChainName[] = (Object.keys(QUOTE_CHAINS) as ChainName[]).filter(c => c in QUOTE_TOKENS);
 
 // USDC and WETH addresses per quote chain (for cross-chain arbitrage)
-export const QUOTE_TOKENS: Record<ChainName, {
+// Not all chains have WETH (e.g., Tempo is stablecoin-only)
+export const QUOTE_TOKENS: Partial<Record<ChainName, {
   USDC: { address: `0x${string}`; decimals: number };
   WETH: { address: `0x${string}`; decimals: number };
-}> = {
+}>> = {
   ethereum: {
     USDC: { address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', decimals: 6 },
     WETH: { address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', decimals: 18 },
@@ -100,6 +109,35 @@ export const QUOTE_TOKENS: Record<ChainName, {
     USDC: { address: '0x79A02482A880bCE3B13e09Da970dC34db4CD24d1', decimals: 6 },
     WETH: { address: '0x4200000000000000000000000000000000000006', decimals: 18 },
   },
+  unichain: {
+    USDC: { address: '0x078D782b760474a361dDA0AF3839290b0EF57AD6', decimals: 6 },
+    WETH: { address: '0x4200000000000000000000000000000000000006', decimals: 18 },
+  },
+  zksync: {
+    USDC: { address: '0x1d17CBcF0D6D143135aE902365D2E5e2A16538D4', decimals: 6 },
+    WETH: { address: '0x5AEa5775959fBC2557Cc8789bC1bf90A239D9a91', decimals: 18 },
+  },
+  linea: {
+    USDC: { address: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff', decimals: 6 },
+    WETH: { address: '0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f', decimals: 18 },
+  },
+  zora: {
+    USDC: { address: '0xCccCcccc7021b32EBb4e8C08314bD62F7c653EC4', decimals: 6 },
+    WETH: { address: '0x4200000000000000000000000000000000000006', decimals: 18 },
+  },
+  monad: {
+    USDC: { address: '0x754704Bc059F8C67012fEd69BC8A327a5aafb603', decimals: 6 },
+    WETH: { address: '0xee8c0e9f1bffb4eb878d8f15f368a02a35481242', decimals: 18 },
+  },
+  xlayer: {
+    USDC: { address: '0x74b7F16337b8972027F6196A17a631aC6dE26d22', decimals: 6 },
+    WETH: { address: '0x5A77f1443D16ee5761d310e38b62f77f726bC71c', decimals: 18 },
+  },
+  soneium: {
+    USDC: { address: '0xbA9986D2381edf1DA03B0B9c1f8b00dc4AacC369', decimals: 6 },
+    WETH: { address: '0x4200000000000000000000000000000000000006', decimals: 18 },
+  },
+  // Tempo (4217) omitted — stablecoin-only L1, no WETH
 };
 
 // Uniswap
