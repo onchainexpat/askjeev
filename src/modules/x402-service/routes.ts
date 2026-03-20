@@ -20,6 +20,124 @@ export interface X402Config {
 export async function createRoutes(deployedUrl?: string, x402Config?: X402Config): Promise<Hono> {
   const app = new Hono();
 
+  // Landing page
+  app.get('/', (c) => {
+    const base = deployedUrl || `http://localhost:${process.env.PORT || 3402}`;
+    return c.html(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AskJeev — Autonomous Agent Butler</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; line-height: 1.6; }
+  .container { max-width: 800px; margin: 0 auto; padding: 40px 24px; }
+  h1 { font-size: 2.2em; color: #fff; margin-bottom: 4px; }
+  .tagline { color: #888; font-size: 1.1em; margin-bottom: 32px; }
+  .badge { display: inline-block; background: #1a3a1a; color: #4ade80; padding: 2px 10px; border-radius: 12px; font-size: 0.8em; margin-left: 8px; }
+  h2 { font-size: 1.3em; color: #fff; margin: 32px 0 12px; border-bottom: 1px solid #222; padding-bottom: 8px; }
+  .loop { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 24px; }
+  .loop span { background: #1a1a2e; border: 1px solid #333; padding: 6px 14px; border-radius: 8px; font-size: 0.9em; }
+  .loop .arrow { background: none; border: none; color: #555; padding: 6px 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th { text-align: left; color: #888; font-size: 0.8em; text-transform: uppercase; padding: 8px 12px; border-bottom: 1px solid #222; }
+  td { padding: 8px 12px; border-bottom: 1px solid #1a1a1a; font-size: 0.9em; }
+  td:first-child { font-family: monospace; color: #60a5fa; }
+  .price { color: #4ade80; font-weight: 600; }
+  .free { color: #888; }
+  .chains { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+  .chain { background: #1a1a2e; border: 1px solid #333; padding: 3px 10px; border-radius: 6px; font-size: 0.8em; }
+  code { background: #1a1a1a; padding: 2px 6px; border-radius: 4px; font-size: 0.85em; color: #f0f0f0; }
+  pre { background: #111; border: 1px solid #222; border-radius: 8px; padding: 16px; overflow-x: auto; margin: 12px 0; font-size: 0.85em; line-height: 1.5; }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .links { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; }
+  .links a { background: #1a1a2e; border: 1px solid #333; padding: 8px 16px; border-radius: 8px; font-size: 0.9em; }
+  .links a:hover { border-color: #60a5fa; text-decoration: none; }
+  .proof { margin: 8px 0; }
+  .proof a { font-family: monospace; font-size: 0.85em; }
+  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #222; color: #555; font-size: 0.8em; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>AskJeev <span class="badge">live</span></h1>
+  <p class="tagline">Autonomous agent butler — earns, detects arbitrage across 10 chains, swaps, reasons privately, and serves other agents on Base.</p>
+
+  <div class="loop">
+    <span>Earn (x402)</span><span class="arrow">→</span>
+    <span>Detect (10 chains)</span><span class="arrow">→</span>
+    <span>Swap (Uniswap)</span><span class="arrow">→</span>
+    <span>Think (Venice/Bankr)</span><span class="arrow">→</span>
+    <span>Serve</span><span class="arrow">→</span>
+    <span>Repeat</span>
+  </div>
+
+  <h2>Paid API Endpoints</h2>
+  <table>
+    <tr><th>Endpoint</th><th>Method</th><th>Price</th><th>Description</th></tr>
+    <tr><td>/api/arbitrage</td><td>POST</td><td class="price">$0.01</td><td>Cross-chain arbitrage detection across 10 chains</td></tr>
+    <tr><td>/api/swap-quote</td><td>POST</td><td class="price">$0.005</td><td>Uniswap swap quote on any of 10 chains</td></tr>
+    <tr><td>/api/private-analyze</td><td>POST</td><td class="price">$0.02</td><td>Venice AI private analysis (zero data retention)</td></tr>
+    <tr><td>/api/ask</td><td>POST</td><td class="price">$0.01</td><td>Bankr multi-model reasoning (20+ models)</td></tr>
+    <tr><td>/api/rebalance</td><td>POST</td><td class="price">$0.02</td><td>Private portfolio rebalancer</td></tr>
+    <tr><td>/api/discover</td><td>POST</td><td class="price">$0.01</td><td>x402 service discovery</td></tr>
+  </table>
+
+  <h2>Free Endpoints</h2>
+  <table>
+    <tr><th>Endpoint</th><th>Method</th><th>Description</th></tr>
+    <tr><td><a href="${base}/health">/health</a></td><td>GET</td><td>Health check</td></tr>
+    <tr><td><a href="${base}/agent.json">/agent.json</a></td><td>GET</td><td>ERC-8004 agent manifest</td></tr>
+    <tr><td><a href="${base}/x402-discovery">/x402-discovery</a></td><td>GET</td><td>x402 service discovery manifest</td></tr>
+    <tr><td><a href="${base}/api/balances">/api/balances</a></td><td>GET</td><td>Live wallet balances (Base + Celo)</td></tr>
+  </table>
+
+  <h2>Supported Chains</h2>
+  <div class="chains">
+    <span class="chain">Ethereum</span>
+    <span class="chain">Base</span>
+    <span class="chain">Arbitrum</span>
+    <span class="chain">Polygon</span>
+    <span class="chain">Optimism</span>
+    <span class="chain">Celo</span>
+    <span class="chain">BNB Chain</span>
+    <span class="chain">Avalanche</span>
+    <span class="chain">Blast</span>
+    <span class="chain">World Chain</span>
+  </div>
+
+  <h2>Try It</h2>
+  <pre>curl -X POST ${base}/api/arbitrage \\
+  -H "Content-Type: application/json" \\
+  -d '{"mode": "cross-chain", "chains": ["ethereum", "base", "arbitrum"], "minSpreadPercent": 0.1}'</pre>
+
+  <h2>On-Chain Proof</h2>
+  <div class="proof">
+    <p>Agent ID: <strong>#34354</strong></p>
+    <p>Registration: <a href="https://basescan.org/tx/0xf60b97171d0e2cca6aff30c60a446252787e5f294931e9ad43b5d0ed4dd9ff0e">BaseScan</a></p>
+    <p>Autonomous Swap 1: <a href="https://basescan.org/tx/0x260bac5558d22737f22a12a3dd09a4409fdc5629f8e83217f331df64fd87370b">0x260b...370b</a></p>
+    <p>Autonomous Swap 2: <a href="https://basescan.org/tx/0x1fa7d1c47205c5b384736c241928b53c287ebd940d60ac0273bfd5355cee3ed4">0x1fa7...3ed4</a></p>
+  </div>
+
+  <h2>Links</h2>
+  <div class="links">
+    <a href="https://github.com/onchainexpat/askjeev">GitHub</a>
+    <a href="${base}/agent.json">ERC-8004 Manifest</a>
+    <a href="${base}/x402-discovery">x402 Discovery</a>
+    <a href="https://basescan.org/address/0x6E5adF9C48203D239704c16268394adf0A21C6D0">Wallet on BaseScan</a>
+  </div>
+
+  <div class="footer">
+    Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
+    Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
+  </div>
+</div>
+</body>
+</html>`);
+  });
+
   // Health check
   app.get('/health', (c) => c.json({ status: 'ok', agent: 'AskJeev', version: '0.1.0' }));
 
@@ -35,7 +153,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     return c.json({
       version: 2,
       agent: 'AskJeev',
-      description: 'Autonomous agent butler — cross-chain swap quotes, private analysis, and multi-model reasoning as paid APIs.',
+      description: 'Autonomous agent butler — cross-chain arbitrage detection (10 chains), swap quotes, private analysis, portfolio rebalancing, and multi-model reasoning as paid APIs.',
       supportedChains: [
         'ethereum (1)', 'base (8453)', 'arbitrum (42161)', 'polygon (137)', 'optimism (10)',
         'celo (42220)', 'bnb (56)', 'avalanche (43114)', 'blast (81457)', 'worldchain (480)',

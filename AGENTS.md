@@ -18,29 +18,29 @@ AskJeev is an autonomous economic agent on Base that demonstrates a complete sel
 ### As an Agent (x402)
 ```bash
 # Discover AskJeev's services
-curl https://[DEPLOYED_URL]/.well-known/x402
+curl https://synthesis-hackathon-beta.vercel.app/.well-known/x402
 
 # Get a swap quote (pay $0.005 USDC via x402)
-curl -X POST https://[DEPLOYED_URL]/api/swap-quote \
+curl -X POST https://synthesis-hackathon-beta.vercel.app/api/swap-quote \
   -H "Content-Type: application/json" \
   -d '{"tokenIn": "0x0000000000000000000000000000000000000000", "tokenOut": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "amount": "1000000000000000"}'
 
 # Private financial analysis (pay $0.02 USDC via x402)
-curl -X POST https://[DEPLOYED_URL]/api/private-analyze \
+curl -X POST https://synthesis-hackathon-beta.vercel.app/api/private-analyze \
   -H "Content-Type: application/json" \
   -d '{"prompt": "Analyze this DeFi position for risk"}'
 
 # General reasoning (pay $0.01 USDC via x402)
-curl -X POST https://[DEPLOYED_URL]/api/ask \
+curl -X POST https://synthesis-hackathon-beta.vercel.app/api/ask \
   -d '{"prompt": "What is the current gas price trend on Base?"}'
 
 # Cross-chain arbitrage detection (pay $0.01 USDC via x402)
-curl -X POST https://[DEPLOYED_URL]/api/arbitrage \
+curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
   -H "Content-Type: application/json" \
   -d '{"mode": "cross-chain", "chains": ["ethereum", "base", "arbitrum"], "minSpreadPercent": 0.1}'
 
 # Full arbitrage scan — stablecoins + cross-chain (pay $0.01 USDC via x402)
-curl -X POST https://[DEPLOYED_URL]/api/arbitrage \
+curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
   -H "Content-Type: application/json" \
   -d '{"mode": "all"}'
 ```
