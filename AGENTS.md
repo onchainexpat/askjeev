@@ -46,10 +46,14 @@ curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
 ```
 
 ### As a Judge
+- **Landing page:** `GET /` — live trust dashboard with identity badges
 - **Health check:** `GET /health`
 - **ERC-8004 manifest:** `GET /agent.json`
 - **Service discovery:** `GET /.well-known/x402`
+- **Trust card:** `GET /api/self-verify` — live agent identity from Celo
+- **Agent Card:** `GET /api/agent-card` — on-chain skills published to Celo
 - All `/api/*` endpoints accept x402 payments in USDC on Base
+- Arbitrage endpoint shows tiered access (`accessTier` field in response)
 
 ## Technical Stack
 
@@ -80,12 +84,12 @@ curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
 │  │ Endpoints│   │ API      │   │          │         │
 │  └──────────┘   └──────────┘   │ Bankr    │         │
 │                                │ (general)│         │
-│  DETECT          IDENTITY      └──────────┘         │
-│  ┌──────────┐   ┌──────────┐                        │
-│  │ Arbitrage│   │ ERC-8004 │                        │
-│  │ 10 chains│   │ agent.json│                       │
-│  │ WETH/USDC│   │ logs     │                        │
-│  └──────────┘   └──────────┘                        │
+│  DETECT          IDENTITY       TRUST               │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐        │
+│  │ Arbitrage│   │ ERC-8004 │   │ Self #42 │        │
+│  │ 10 chains│   │ agent.json│  │ ZK proof │        │
+│  │ WETH/USDC│   │ logs     │   │ Tiered   │        │
+│  └──────────┘   └──────────┘   └──────────┘        │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -99,25 +103,55 @@ AskJeev demonstrates autonomous economic viability:
 
 ## Self Agent ID (Proof-of-Human)
 
-AskJeev supports Self Agent ID verification — a ZK-powered identity primitive on Celo that proves an agent is human-backed without revealing personal data.
+AskJeev is **Self Agent ID #42** on Celo — a ZK-powered identity primitive that proves the agent is human-backed without revealing personal data (verified via passport ZK proof, valid for 364 days).
 
-When `SELF_ENABLED=true`:
-- All `/api/*` endpoints optionally accept Self Agent ID headers
-- Verified callers get a trust boost (visible in responses)
-- Non-verified callers can still use x402 payment (Self is additive, not gating)
+### Live Trust Dashboard
+
+The landing page displays a live **Agent Trust Profile** fetched from `/api/self-verify`:
+- **3 green badges:** x402 Payments, Self Verified, ERC-8004 Identity
+- **Agent ID #42** linked to Celo registry contract
+- **Sybil resistance:** 1 of 3 agents (each human limited to 3 agents via ZK passport proof)
+- **Proof validity countdown:** 364 days remaining
+
+### Tiered Access (Why Self Matters)
+
+Self-verified agents get **premium access** — a real economic incentive for identity verification:
+
+| Feature | Standard (no Self) | Premium (Self verified) |
+|---------|-------------------|------------------------|
+| Chains scanned | 5 | All 10 |
+| Venice AI analysis | No | Yes |
+| Min spread threshold | 0.1% | 0.01% |
 
 ```bash
-# Check Self verification status
-curl https://synthesis-hackathon-beta.vercel.app/api/self-status
-# → {"selfEnabled":true,"verified":false,"message":"Self Agent ID headers not provided..."}
+# Standard access (no Self headers) → 5 chains, no AI analysis
+curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
+  -H "Content-Type: application/json" \
+  -d '{"mode": "cross-chain"}'
+# → {"accessTier":"standard","selfVerified":false,"chains":5,"upgrade":"Add Self Agent ID headers..."}
 
-# Call with Self headers (if you have a Self Agent ID)
+# Premium access (with Self headers) → 10 chains + Venice analysis
 curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
   -H "x-self-agent-signature: <your-sig>" \
   -H "x-self-agent-timestamp: <unix-ms>" \
   -H "x-self-agent-key: <your-key>" \
   -H "Content-Type: application/json" \
   -d '{"mode": "cross-chain"}'
+# → {"accessTier":"premium","selfVerified":true,"chains":10,"analysis":"Venice AI: ..."}
+```
+
+### Trust Endpoints
+
+```bash
+# Live trust card (agent identity + verification status)
+curl https://synthesis-hackathon-beta.vercel.app/api/self-verify
+# → {"agent":{"agentId":42,"isVerified":true,"daysUntilExpiry":364},"trust":{"x402Payment":true,"selfVerified":true,"erc8004Identity":true}}
+
+# On-chain Agent Card (skills published to Celo)
+curl https://synthesis-hackathon-beta.vercel.app/api/agent-card
+
+# Basic Self status
+curl https://synthesis-hackathon-beta.vercel.app/api/self-status
 ```
 
 ## Security
