@@ -77,8 +77,22 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 <body>
 <div class="container">
   <h1>AskJeev <span class="badge">live</span></h1>
-  <p class="tagline">Autonomous agent butler — earns, detects arbitrage across 18 chains, swaps, generates images, bridges cross-chain, and serves other agents on Base.</p>
+  <p class="tagline">An autonomous AI agent that earns money, trades across 18 chains, generates uncensored images, and proves it's human-backed — all without a human in the loop.</p>
 
+  <div style="background:#111;border:1px solid #222;border-radius:12px;padding:20px;margin:20px 0;">
+    <p style="color:#aaa;font-size:0.95em;line-height:1.7;margin:0;">
+      <strong style="color:#fff;">The problem:</strong> AI agents need to transact autonomously, but there's no trust infrastructure. How does one agent know another is real? How do you gate sensitive content by age without KYC?
+    </p>
+    <p style="color:#aaa;font-size:0.95em;line-height:1.7;margin:10px 0 0;">
+      <strong style="color:#fff;">AskJeev combines three primitives:</strong>
+      <strong style="color:#60a5fa;">x402</strong> (agent-to-agent payments),
+      <strong style="color:#4ade80;">Self Protocol</strong> (ZK proof-of-human identity on Celo), and
+      <strong style="color:#f59e0b;">ERC-8004</strong> (on-chain agent registry) —
+      into a self-sustaining agent that earns, trades, creates, and serves.
+    </p>
+  </div>
+
+  <h2>The Loop</h2>
   <div class="loop">
     <span>Earn (x402)</span><span class="arrow">→</span>
     <span>Detect (18 chains)</span><span class="arrow">→</span>
@@ -88,6 +102,22 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     <span>Create (Venice Images)</span><span class="arrow">→</span>
     <span>Serve</span><span class="arrow">→</span>
     <span>Repeat</span>
+  </div>
+
+  <h2>What Makes This Different</h2>
+  <div style="display:grid;gap:16px;margin:12px 0;">
+    <div style="background:#111;border:1px solid #222;border-radius:10px;padding:16px;">
+      <p style="color:#f59e0b;font-weight:600;margin-bottom:4px;">ZK Age-Gated Image Generation</p>
+      <p style="color:#aaa;font-size:0.9em;">Uncensored AI image generation via Venice AI — but only for agents that prove they're backed by a human aged 18+ via Self Protocol's ZK passport proof. No KYC, no data leak. First-of-its-kind age gate without identity disclosure.</p>
+    </div>
+    <div style="background:#111;border:1px solid #222;border-radius:10px;padding:16px;">
+      <p style="color:#60a5fa;font-weight:600;margin-bottom:4px;">Identity-Tiered DeFi Access</p>
+      <p style="color:#aaa;font-size:0.9em;">Self-verified agents get premium arbitrage scanning (17 chains, AI analysis, 0.01% thresholds). Unverified agents get basic access (5 chains). Real economic incentive for agents to prove identity.</p>
+    </div>
+    <div style="background:#111;border:1px solid #222;border-radius:10px;padding:16px;">
+      <p style="color:#4ade80;font-weight:600;margin-bottom:4px;">Self-Sustaining Economics</p>
+      <p style="color:#aaa;font-size:0.9em;">9 paid API endpoints earn USDC via x402 protocol. Revenue funds Bankr LLM inference, Uniswap swaps, and Venice AI calls. The agent pays for its own compute from service fees.</p>
+    </div>
   </div>
 
   <div class="trust-section" id="trust-profile">
@@ -156,8 +186,8 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <h2>Paid API Endpoints</h2>
   <table>
     <tr><th>Endpoint</th><th>Method</th><th>Price</th><th>Description</th></tr>
-    <tr><td>/api/arbitrage</td><td>POST</td><td class="price">$0.01</td><td>Cross-chain arbitrage detection across 10 chains</td></tr>
-    <tr><td>/api/swap-quote</td><td>POST</td><td class="price">$0.005</td><td>Uniswap swap quote on any of 10 chains</td></tr>
+    <tr><td>/api/arbitrage</td><td>POST</td><td class="price">$0.01</td><td>Cross-chain arbitrage detection across 18 chains</td></tr>
+    <tr><td>/api/swap-quote</td><td>POST</td><td class="price">$0.005</td><td>Uniswap swap quote on any of 18 chains</td></tr>
     <tr><td>/api/private-analyze</td><td>POST</td><td class="price">$0.02</td><td>Venice AI private analysis (zero data retention)</td></tr>
     <tr><td>/api/ask</td><td>POST</td><td class="price">$0.01</td><td>Bankr multi-model reasoning (20+ models)</td></tr>
     <tr><td>/api/rebalance</td><td>POST</td><td class="price">$0.02</td><td>Private portfolio rebalancer</td></tr>
@@ -208,8 +238,9 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
   <h2>On-Chain Proof</h2>
   <div class="proof">
-    <p>Agent ID: <strong>#34354</strong></p>
-    <p>Registration: <a href="https://basescan.org/tx/0xf60b97171d0e2cca6aff30c60a446252787e5f294931e9ad43b5d0ed4dd9ff0e">BaseScan</a></p>
+    <p style="color:#aaa;font-size:0.9em;margin-bottom:8px;">Every action is verifiable on-chain — registration, swaps, and identity.</p>
+    <p>ERC-8004 Agent ID: <strong>#34354</strong> — <a href="https://basescan.org/tx/0xf60b97171d0e2cca6aff30c60a446252787e5f294931e9ad43b5d0ed4dd9ff0e">Registration TX (Base)</a></p>
+    <p>Self Agent ID: <strong>#42</strong> — <a href="https://celoscan.io/address/0xaC3DF9ABf80d0F5c020C06B04Cced27763355944">Registry (Celo)</a></p>
     <p>Autonomous Swap 1: <a href="https://basescan.org/tx/0x260bac5558d22737f22a12a3dd09a4409fdc5629f8e83217f331df64fd87370b">0x260b...370b</a></p>
     <p>Autonomous Swap 2: <a href="https://basescan.org/tx/0x1fa7d1c47205c5b384736c241928b53c287ebd940d60ac0273bfd5355cee3ed4">0x1fa7...3ed4</a></p>
   </div>
@@ -296,7 +327,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
           price: '$0.01',
           currency: 'USDC',
           network: 'base',
-          description: 'Detect cross-chain arbitrage opportunities across 10 chains via Uniswap quotes. Supports stablecoin pegs and USDC→WETH cross-chain pricing.',
+          description: 'Detect cross-chain arbitrage opportunities across 18 chains via Uniswap quotes. Supports stablecoin pegs and USDC→WETH cross-chain pricing.',
         },
         {
           path: '/api/rebalance',
