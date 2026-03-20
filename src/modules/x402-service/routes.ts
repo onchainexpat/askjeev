@@ -92,6 +92,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     <tr><td><a href="/agent.json">/agent.json</a></td><td>GET</td><td>ERC-8004 agent manifest</td></tr>
     <tr><td><a href="/x402-discovery">/x402-discovery</a></td><td>GET</td><td>x402 service discovery manifest</td></tr>
     <tr><td><a href="/api/balances">/api/balances</a></td><td>GET</td><td>Live wallet balances (Base + Celo)</td></tr>
+    <tr><td><a href="/api/self-status">/api/self-status</a></td><td>GET</td><td>Self Agent ID verification status</td></tr>
   </table>
 
   <h2>Supported Chains</h2>

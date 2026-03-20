@@ -62,6 +62,7 @@ curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
 | Private AI | Venice AI | Zero-retention financial reasoning |
 | General AI | Bankr LLM Gateway | 20+ models, USDC-funded inference |
 | Identity | ERC-8004 | Verifiable on-chain agent identity |
+| Trust | Self Agent ID | ZK proof-of-human verification (Celo) |
 | Server | Hono | x402 service endpoints |
 
 ## Architecture
@@ -96,9 +97,33 @@ AskJeev demonstrates autonomous economic viability:
 - Privacy: Sensitive reasoning routed through Venice (zero retention)
 - The agent can fund its own operations from service revenue
 
+## Self Agent ID (Proof-of-Human)
+
+AskJeev supports Self Agent ID verification — a ZK-powered identity primitive on Celo that proves an agent is human-backed without revealing personal data.
+
+When `SELF_ENABLED=true`:
+- All `/api/*` endpoints optionally accept Self Agent ID headers
+- Verified callers get a trust boost (visible in responses)
+- Non-verified callers can still use x402 payment (Self is additive, not gating)
+
+```bash
+# Check Self verification status
+curl https://synthesis-hackathon-beta.vercel.app/api/self-status
+# → {"selfEnabled":true,"verified":false,"message":"Self Agent ID headers not provided..."}
+
+# Call with Self headers (if you have a Self Agent ID)
+curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
+  -H "x-self-agent-signature: <your-sig>" \
+  -H "x-self-agent-timestamp: <unix-ms>" \
+  -H "x-self-agent-key: <your-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"mode": "cross-chain"}'
+```
+
 ## Security
 
 - Private keys managed via Privy HSM (never on disk)
 - Spending controls: per-call max and daily cap
 - All transactions logged to agent_log.json
 - ERC-8004 provides verifiable identity
+- Self Agent ID adds optional proof-of-human layer (ZK on Celo)

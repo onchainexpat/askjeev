@@ -44,6 +44,7 @@ An agent that earns $10 in USDC can't use it to pay for its own LLM inference, o
 | `/api/arbitrage` | POST | $0.01 | Cross-chain arbitrage detection (10 chains) |
 | `/api/rebalance` | POST | $0.02 | Private portfolio rebalancer (Venice-analyzed) |
 | `/api/discover` | POST | $0.01 | x402 service discovery across the agent economy |
+| `/api/self-status` | GET | Free | Self Agent ID verification status |
 
 ### Example: Get a Swap Quote
 
@@ -186,6 +187,7 @@ Built for the [Synthesis Hackathon](https://synthesis.md) — competing across:
 - **Private Agents (Venice)** — zero-retention AI reasoning
 - **Best Bankr LLM Gateway Use** — self-sustaining inference economics
 - **Agents With Receipts (ERC-8004)** — verifiable agent identity
+- **Self Agent ID** — ZK-powered proof-of-human verification on Celo
 
 ## On-Chain Artifacts
 
