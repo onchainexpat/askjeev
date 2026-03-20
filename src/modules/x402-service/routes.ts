@@ -88,10 +88,10 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <h2>Free Endpoints</h2>
   <table>
     <tr><th>Endpoint</th><th>Method</th><th>Description</th></tr>
-    <tr><td><a href="${base}/health">/health</a></td><td>GET</td><td>Health check</td></tr>
-    <tr><td><a href="${base}/agent.json">/agent.json</a></td><td>GET</td><td>ERC-8004 agent manifest</td></tr>
-    <tr><td><a href="${base}/x402-discovery">/x402-discovery</a></td><td>GET</td><td>x402 service discovery manifest</td></tr>
-    <tr><td><a href="${base}/api/balances">/api/balances</a></td><td>GET</td><td>Live wallet balances (Base + Celo)</td></tr>
+    <tr><td><a href="/health">/health</a></td><td>GET</td><td>Health check</td></tr>
+    <tr><td><a href="/agent.json">/agent.json</a></td><td>GET</td><td>ERC-8004 agent manifest</td></tr>
+    <tr><td><a href="/x402-discovery">/x402-discovery</a></td><td>GET</td><td>x402 service discovery manifest</td></tr>
+    <tr><td><a href="/api/balances">/api/balances</a></td><td>GET</td><td>Live wallet balances (Base + Celo)</td></tr>
   </table>
 
   <h2>Supported Chains</h2>
@@ -109,7 +109,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   </div>
 
   <h2>Try It</h2>
-  <pre>curl -X POST ${base}/api/arbitrage \\
+  <pre>curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \\
   -H "Content-Type: application/json" \\
   -d '{"mode": "cross-chain", "chains": ["ethereum", "base", "arbitrum"], "minSpreadPercent": 0.1}'</pre>
 
@@ -124,8 +124,8 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <h2>Links</h2>
   <div class="links">
     <a href="https://github.com/onchainexpat/askjeev">GitHub</a>
-    <a href="${base}/agent.json">ERC-8004 Manifest</a>
-    <a href="${base}/x402-discovery">x402 Discovery</a>
+    <a href="/agent.json">ERC-8004 Manifest</a>
+    <a href="/x402-discovery">x402 Discovery</a>
     <a href="https://basescan.org/address/0x6E5adF9C48203D239704c16268394adf0A21C6D0">Wallet on BaseScan</a>
   </div>
 
