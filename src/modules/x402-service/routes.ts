@@ -123,7 +123,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       // Meta
       const metaItems = [];
       if (a.agentId) metaItems.push('Agent ID: <strong>#' + a.agentId + '</strong> <a href="https://celoscan.io/address/' + t.registryContract + '" target="_blank">(Celo Registry)</a>');
-      if (a.agentCount !== undefined) metaItems.push('Sybil: <strong>' + a.agentCount + ' of ' + (a.sybilLimit || 3) + '</strong> agents');
+      if (a.agentCount !== undefined) metaItems.push('Sybil: <strong>' + a.agentCount + ' of ' + (a.sybilLimit || 3) + '</strong> agents <span style="color:#666;font-size:0.85em;" title="Each human verified by ZK passport can register up to ' + (a.sybilLimit || 3) + ' agents. Lower usage = higher trust.">(each human limited to ' + (a.sybilLimit || 3) + ' agents via ZK passport proof)</span>');
       meta.innerHTML = metaItems.map(h => '<span>' + h + '</span>').join('');
 
       // Expiry
