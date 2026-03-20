@@ -516,6 +516,18 @@ describe('Arbitrage Service', () => {
     expect(result.opportunities).toHaveLength(0);
   });
 
+  it('getCrossChainPairs skips chains without QUOTE_TOKENS (e.g., Tempo)', async () => {
+    const { getCrossChainPairs } = await import('../../src/modules/arbitrage/client.js');
+
+    // tempo has no QUOTE_TOKENS entry, so pairs involving tempo should be skipped
+    const pairs = getCrossChainPairs(['ethereum', 'tempo' as any]);
+    expect(pairs).toHaveLength(0);
+
+    // But two valid chains should generate 1 pair
+    const validPairs = getCrossChainPairs(['ethereum', 'base']);
+    expect(validPairs).toHaveLength(1);
+  });
+
   it('detectArbitrage uses premium defaults when selfVerified=true', async () => {
     const { detectArbitrage } = await import('../../src/modules/arbitrage/service.js');
 

@@ -77,6 +77,63 @@ describe('x402 Service Routes', () => {
     expect(data.endpoints[9].path).toBe('/api/bridge');
   });
 
+  it('rejects generate-image without Self verification (403)', async () => {
+    delete process.env.SELF_ENABLED;
+    const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
+    const app = await createRoutes();
+
+    const res = await app.request('/api/generate-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: 'test image' }),
+    });
+    const data = await res.json();
+    expect(res.status).toBe(403);
+    expect(data.error).toContain('Self Agent ID verification required');
+  });
+
+  it('rejects limit-order without required fields', async () => {
+    const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
+    const app = await createRoutes();
+
+    const res = await app.request('/api/limit-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tokenIn: '0x123' }),
+    });
+    const data = await res.json();
+    expect(res.status).toBe(400);
+    expect(data.error).toContain('tokenIn, tokenOut, amount, and limitPrice required');
+  });
+
+  it('rejects bridge without required fields', async () => {
+    const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
+    const app = await createRoutes();
+
+    const res = await app.request('/api/bridge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tokenIn: '0x123', tokenOut: '0x456' }),
+    });
+    const data = await res.json();
+    expect(res.status).toBe(400);
+    expect(data.error).toContain('tokenIn, tokenOut, amount, chainIn, and chainOut required');
+  });
+
+  it('rejects bridge with same chainIn and chainOut', async () => {
+    const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
+    const app = await createRoutes();
+
+    const res = await app.request('/api/bridge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tokenIn: '0x123', tokenOut: '0x456', amount: '1000', chainIn: 'base', chainOut: 'base' }),
+    });
+    const data = await res.json();
+    expect(res.status).toBe(400);
+    expect(data.error).toContain('chainIn and chainOut must be different');
+  });
+
   it('serves agent.json', async () => {
     const { createRoutes } = await import('../../src/modules/x402-service/routes.js');
     const app = await createRoutes('https://askjeev.example.com');
