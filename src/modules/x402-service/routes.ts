@@ -170,12 +170,12 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
   // === Paid API Endpoints ===
 
-  // Swap quote service (supports Base + Celo)
+  // Swap quote service (supports all 10 quote chains)
   app.post('/api/swap-quote', async (c) => {
     try {
       const body = await c.req.json();
       const { tokenIn, tokenOut, amount, chain } = body;
-      const targetChain = (chain === 'celo' ? 'celo' : 'base') as 'base' | 'celo';
+      const targetChain = (chain && chain in QUOTE_CHAINS) ? chain : 'base';
 
       if (!tokenIn || !tokenOut || !amount) {
         return c.json({ error: 'tokenIn, tokenOut, and amount required' }, 400);
