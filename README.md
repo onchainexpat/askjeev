@@ -2,7 +2,9 @@
 
 > An autonomous agent butler that earns, swaps, detects cross-chain arbitrage across 10 chains, reasons privately, and serves on Base — with verifiable ERC-8004 identity.
 
-**Live:** [synthesis-hackathon-beta.vercel.app](https://synthesis-hackathon-beta.vercel.app/health)
+**Live:** [synthesis-hackathon-beta.vercel.app](https://synthesis-hackathon-beta.vercel.app)
+
+![AskJeev Live Demo](docs/screenshots/askjeev-live-demo.gif)
 
 ## What It Does
 
@@ -76,6 +78,33 @@ curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
 ```
 
 Returns WETH pricing discrepancies across chains — buy where it's cheap, sell where it's expensive. Supports 10 chains via the Uniswap Trading API with rate-limited batched quotes.
+
+### Live Arbitrage Results (real data)
+
+```json
+{
+  "pairsChecked": 10,
+  "opportunities": [
+    {
+      "pair": "WETH price: Base vs Polygon",
+      "spreadPercent": 0.04,
+      "direction": "USDC→WETH (Base) gives better rate — Polygon is underpriced"
+    },
+    {
+      "pair": "WETH price: Base vs Optimism",
+      "spreadPercent": 0.04,
+      "direction": "USDC→WETH (Base) gives better rate — Optimism is underpriced"
+    },
+    {
+      "pair": "WETH price: Arbitrum vs Optimism",
+      "spreadPercent": 0.03,
+      "direction": "USDC→WETH (Arbitrum) gives better rate — Optimism is underpriced"
+    }
+  ]
+}
+```
+
+Real-time WETH prices detected across Ethereum, Base, Arbitrum, Polygon, and Optimism. Spreads are small (0.03-0.04%) because major chains have efficient markets — the system would catch larger dislocations during volatility events.
 
 ## Architecture
 

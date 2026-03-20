@@ -1,0 +1,146 @@
+{
+    "opportunities": [
+        {
+            "pair": "WETH price: Base vs Polygon",
+            "sideA": {
+                "label": "USDC\u2192WETH (Base)",
+                "rate": 0.0005
+            },
+            "sideB": {
+                "label": "USDC\u2192WETH (Polygon)",
+                "rate": 0.0005
+            },
+            "spreadPercent": 0.04,
+            "direction": "USDC\u2192WETH (Base) gives better rate (0.0005) \u2014 USDC\u2192WETH (Polygon) is underpriced",
+            "estimatedProfitUSD": 0.04
+        },
+        {
+            "pair": "WETH price: Base vs Optimism",
+            "sideA": {
+                "label": "USDC\u2192WETH (Base)",
+                "rate": 0.0005
+            },
+            "sideB": {
+                "label": "USDC\u2192WETH (Optimism)",
+                "rate": 0.0005
+            },
+            "spreadPercent": 0.04,
+            "direction": "USDC\u2192WETH (Base) gives better rate (0.0005) \u2014 USDC\u2192WETH (Optimism) is underpriced",
+            "estimatedProfitUSD": 0.04
+        },
+        {
+            "pair": "WETH price: Arbitrum vs Optimism",
+            "sideA": {
+                "label": "USDC\u2192WETH (Arbitrum)",
+                "rate": 0.0005
+            },
+            "sideB": {
+                "label": "USDC\u2192WETH (Optimism)",
+                "rate": 0.0005
+            },
+            "spreadPercent": 0.03,
+            "direction": "USDC\u2192WETH (Arbitrum) gives better rate (0.0005) \u2014 USDC\u2192WETH (Optimism) is underpriced",
+            "estimatedProfitUSD": 0.03
+        },
+        {
+            "pair": "WETH price: Ethereum vs Base",
+            "sideA": {
+                "label": "USDC\u2192WETH (Ethereum)",
+                "rate": 0.0005
+            },
+            "sideB": {
+                "label": "USDC\u2192WETH (Base)",
+                "rate": 0.0005
+            },
+            "spreadPercent": 0.02,
+            "direction": "USDC\u2192WETH (Base) gives better rate (0.0005) \u2014 USDC\u2192WETH (Ethereum) is underpriced",
+            "estimatedProfitUSD": 0.02
+        },
+        {
+            "pair": "WETH price: Ethereum vs Arbitrum",
+            "sideA": {
+                "label": "USDC\u2192WETH (Ethereum)",
+                "rate": 0.0005
+            },
+            "sideB": {
+                "label": "USDC\u2192WETH (Arbitrum)",
+                "rate": 0.0005
+            },
+            "spreadPercent": 0.02,
+            "direction": "USDC\u2192WETH (Arbitrum) gives better rate (0.0005) \u2014 USDC\u2192WETH (Ethereum) is underpriced",
+            "estimatedProfitUSD": 0.02
+        },
+        {
+            "pair": "WETH price: Base vs Arbitrum",
+            "sideA": {
+                "label": "USDC\u2192WETH (Base)",
+                "rate": 0.0005
+            },
+            "sideB": {
+                "label": "USDC\u2192WETH (Arbitrum)",
+                "rate": 0.0005
+            },
+            "spreadPercent": 0.02,
+            "direction": "USDC\u2192WETH (Base) gives better rate (0.0005) \u2014 USDC\u2192WETH (Arbitrum) is underpriced",
+            "estimatedProfitUSD": 0.02
+        },
+        {
+            "pair": "WETH price: Arbitrum vs Polygon",
+            "sideA": {
+                "label": "USDC\u2192WETH (Arbitrum)",
+                "rate": 0.0005
+            },
+            "sideB": {
+                "label": "USDC\u2192WETH (Polygon)",
+                "rate": 0.0005
+            },
+            "spreadPercent": 0.02,
+            "direction": "USDC\u2192WETH (Arbitrum) gives better rate (0.0005) \u2014 USDC\u2192WETH (Polygon) is underpriced",
+            "estimatedProfitUSD": 0.02
+        },
+        {
+            "pair": "WETH price: Ethereum vs Optimism",
+            "sideA": {
+                "label": "USDC\u2192WETH (Ethereum)",
+                "rate": 0.0005
+            },
+            "sideB": {
+                "label": "USDC\u2192WETH (Optimism)",
+                "rate": 0.0005
+            },
+            "spreadPercent": 0.01,
+            "direction": "USDC\u2192WETH (Ethereum) gives better rate (0.0005) \u2014 USDC\u2192WETH (Optimism) is underpriced",
+            "estimatedProfitUSD": 0.01
+        },
+        {
+            "pair": "WETH price: Polygon vs Optimism",
+            "sideA": {
+                "label": "USDC\u2192WETH (Polygon)",
+                "rate": 0.0005
+            },
+            "sideB": {
+                "label": "USDC\u2192WETH (Optimism)",
+                "rate": 0.0005
+            },
+            "spreadPercent": 0.01,
+            "direction": "USDC\u2192WETH (Polygon) gives better rate (0.0005) \u2014 USDC\u2192WETH (Optimism) is underpriced",
+            "estimatedProfitUSD": 0.01
+        },
+        {
+            "pair": "WETH price: Ethereum vs Polygon",
+            "sideA": {
+                "label": "USDC\u2192WETH (Ethereum)",
+                "rate": 0.0005
+            },
+            "sideB": {
+                "label": "USDC\u2192WETH (Polygon)",
+                "rate": 0.0005
+            },
+            "spreadPercent": 0,
+            "direction": "USDC\u2192WETH (Ethereum) gives better rate (0.0005) \u2014 USDC\u2192WETH (Polygon) is underpriced",
+            "estimatedProfitUSD": 0
+        }
+    ],
+    "pairsChecked": 10,
+    "timestamp": "2026-03-20T11:50:40.269Z"
+}
