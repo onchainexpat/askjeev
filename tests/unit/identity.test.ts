@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { readFile, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 
 vi.mock('../../src/config.js', () => ({
   getAccount: () => ({
@@ -10,7 +11,9 @@ vi.mock('../../src/config.js', () => ({
 }));
 
 describe('Identity Module', () => {
-  const logPath = join(process.cwd(), 'agent_log.json');
+  // Use /tmp for test logs to avoid clobbering the real agent_log.json
+process.env.VERCEL = '1';
+const logPath = join(tmpdir(), 'agent_log.json');
 
   beforeEach(async () => {
     // Clean up test log file before each test

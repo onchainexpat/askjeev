@@ -121,3 +121,58 @@ This document captures the key decisions, pivots, and breakthroughs from the col
 2. **Venice privacy angle:** Using Venice specifically for sensitive financial analysis (not just as another LLM) differentiates from competitors and directly addresses the Venice track's focus on "private agents, trusted actions."
 
 3. **x402 full-loop demo:** AskJeev both CONSUMES x402 services (via the existing x402-wallet-mcp ecosystem at x402.onchainexpat.com) and PROVIDES them — making it a full economic participant, not just a consumer.
+
+## Session 2: Autonomous Execution & On-Chain Proof (Mar 19-20, 2026)
+
+### Critical Pivot: From API Wrapper to Autonomous Agent
+
+**Human:** Asked the agent to be a harsh critic of the submission. The agent identified that the project was "a well-structured API server with good documentation, but it won't blow judges away because it doesn't DO anything autonomously."
+
+**Key problems identified:**
+- No real on-chain transactions (Uniswap track requires real TxIDs)
+- x402 payments disabled on production
+- No orchestrator / decision loop
+- Self and Celo integrations were superficial
+- The "self-sustaining economics" narrative was just a pitch, not a demo
+
+**Decision:** Maximum effort. Build a real autonomous orchestrator, execute real swaps, enable x402 on production.
+
+### Orchestrator Built — Real Autonomous Decisions
+
+Built a full decision cycle: **Observe → Analyze → Decide → Execute → Report**
+
+1. **Observe:** Check wallet balances across Base and Celo
+2. **Analyze:** Private financial analysis via Venice AI (zero data retention)
+3. **Decide:** Choose actions based on analysis — swap ETH for stablecoins, gather cross-chain market intel, reason about portfolio
+4. **Execute:** Real on-chain swaps via Uniswap, real Bankr LLM calls, real x402 service calls
+5. **Report:** Log all decisions with reasoning to agent_log.json
+
+### Real On-Chain Transactions
+
+Two autonomous swap cycles executed on Base mainnet:
+
+**Cycle 1:**
+- Swap: 0.00005 ETH → 0.107657 USDC
+- TxHash: [0x260bac55...](https://basescan.org/tx/0x260bac5558d22737f22a12a3dd09a4409fdc5629f8e83217f331df64fd87370b)
+
+**Cycle 2:**
+- Swap: 0.00005 ETH → 0.107712 USDC
+- TxHash: [0x1fa7d1c4...](https://basescan.org/tx/0x1fa7d1c47205c5b384736c241928b53c287ebd940d60ac0273bfd5355cee3ed4)
+
+Both swaps were decided autonomously — Venice analyzed the wallet state, the orchestrator chose to convert ETH to stablecoins based on the analysis.
+
+### x402 Payments Enabled on Production
+
+Switched `DEV_SKIP_PAYMENT=false` on Vercel. All `/api/*` endpoints now require x402 USDC payment:
+- `/api/swap-quote` — $0.005 USDC
+- `/api/private-analyze` — $0.02 USDC
+- `/api/ask` — $0.01 USDC
+
+Judges can verify by curling any endpoint and seeing the 402 response with payment-required header.
+
+### Final Test Results
+
+- **35/35 unit tests** passing
+- **10/10 live integration tests** passing (health, agent.json, discovery, Base swap, Celo swap, Venice, Bankr, balances, Self status, validation)
+- **3 on-chain transactions** on BaseScan (registration, self-custody, 2 real swaps)
+- **8 hackathon tracks** registered

@@ -3,5 +3,5 @@ dist/
 .env
 *.log
 .DS_Store
-agent_log.json
+# agent_log.json is intentionally committed — required for ERC-8004 track
 .vercel
