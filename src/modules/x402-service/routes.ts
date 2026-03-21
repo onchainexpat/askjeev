@@ -607,9 +607,22 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
         || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${process.env.PORT || 3402}`);
       const targetUrl = baseUrl + endpoint;
 
+      // Build request headers — add Self Agent ID signing for image gen
+      const reqHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (endpoint === '/api/generate-image' && process.env.SELF_AGENT_PRIVATE_KEY) {
+        try {
+          const { SelfAgent } = await import('@selfxyz/agent-sdk');
+          const selfAgent = new SelfAgent({ privateKey: process.env.SELF_AGENT_PRIVATE_KEY });
+          const selfSig = await selfAgent.signRequest('POST', endpoint, JSON.stringify(reqBody || {}));
+          reqHeaders['x-self-agent-address'] = selfSig['x-self-agent-address'];
+          reqHeaders['x-self-agent-signature'] = selfSig['x-self-agent-signature'];
+          reqHeaders['x-self-agent-timestamp'] = selfSig['x-self-agent-timestamp'];
+        } catch { /* Self SDK unavailable, skip */ }
+      }
+
       const res = await x402Fetch(targetUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: reqHeaders,
         body: JSON.stringify(reqBody || {}),
       });
 
