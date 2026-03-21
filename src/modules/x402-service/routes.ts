@@ -32,63 +32,86 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; line-height: 1.6; }
-  .container { max-width: 800px; margin: 0 auto; padding: 40px 24px; }
-  h1 { font-size: 2.2em; color: #fff; margin-bottom: 4px; }
-  .tagline { color: #888; font-size: 1.1em; margin-bottom: 32px; }
-  .badge { display: inline-block; background: #1a3a1a; color: #4ade80; padding: 2px 10px; border-radius: 12px; font-size: 0.8em; margin-left: 8px; }
-  h2 { font-size: 1.3em; color: #fff; margin: 32px 0 12px; border-bottom: 1px solid #222; padding-bottom: 8px; }
-  .loop { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 24px; }
-  .loop span { background: #1a1a2e; border: 1px solid #333; padding: 6px 14px; border-radius: 8px; font-size: 0.9em; }
-  .loop .arrow { background: none; border: none; color: #555; padding: 6px 4px; }
-  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
-  th { text-align: left; color: #888; font-size: 0.8em; text-transform: uppercase; padding: 8px 12px; border-bottom: 1px solid #222; }
-  td { padding: 8px 12px; border-bottom: 1px solid #1a1a1a; font-size: 0.9em; }
-  td:first-child { font-family: monospace; color: #60a5fa; }
-  .price { color: #4ade80; font-weight: 600; }
-  .free { color: #888; }
-  .chains { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
-  .chain { background: #1a1a2e; border: 1px solid #333; padding: 3px 10px; border-radius: 6px; font-size: 0.8em; }
-  code { background: #1a1a1a; padding: 2px 6px; border-radius: 4px; font-size: 0.85em; color: #f0f0f0; }
-  pre { background: #111; border: 1px solid #222; border-radius: 8px; padding: 16px; overflow-x: auto; margin: 12px 0; font-size: 0.85em; line-height: 1.5; }
-  a { color: #60a5fa; text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .links { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; }
-  .links a { background: #1a1a2e; border: 1px solid #333; padding: 8px 16px; border-radius: 8px; font-size: 0.9em; }
-  .links a:hover { border-color: #60a5fa; text-decoration: none; }
+  body { font-family: Georgia, 'Times New Roman', serif; background: #F5EFE0; color: #333; line-height: 1.6; }
+  .topbar { background: linear-gradient(180deg, #2B5C8A 0%, #1B3A5C 100%); padding: 10px 0; border-bottom: 3px solid #C4A335; }
+  .topbar-inner { max-width: 820px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+  .topbar-links { display: flex; gap: 16px; }
+  .topbar-links a { color: #D4E4F7; font-size: 0.8em; text-decoration: none; font-family: Verdana, sans-serif; }
+  .topbar-links a:hover { color: #fff; text-decoration: underline; }
+  .container { max-width: 820px; margin: 0 auto; padding: 24px 24px 40px; }
+  h1 { font-size: 2.4em; color: #1B3A5C; margin-bottom: 2px; font-weight: normal; }
+  .tagline { color: #666; font-size: 1em; margin-bottom: 24px; font-style: italic; }
+  .badge { display: inline-block; background: #2B7A3A; color: #fff; padding: 2px 10px; border-radius: 3px; font-size: 0.7em; margin-left: 8px; font-family: Verdana, sans-serif; font-style: normal; vertical-align: middle; }
+  h2 { font-size: 1.2em; color: #1B3A5C; margin: 28px 0 10px; border-bottom: 2px solid #C4A335; padding-bottom: 6px; }
+  .loop { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 20px; }
+  .loop span { background: #E8DCC8; border: 1px solid #C4A335; padding: 4px 12px; font-size: 0.85em; font-family: Verdana, sans-serif; color: #1B3A5C; }
+  .loop .arrow { background: none; border: none; color: #999; padding: 4px 2px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #C4A335; }
+  th { text-align: left; color: #fff; background: #2B5C8A; font-size: 0.75em; text-transform: uppercase; padding: 6px 10px; font-family: Verdana, sans-serif; }
+  td { padding: 6px 10px; border-bottom: 1px solid #DDD5C3; font-size: 0.85em; background: #FDFAF3; }
+  td:first-child { font-family: 'Courier New', monospace; color: #1B3A5C; }
+  .price { color: #2B7A3A; font-weight: 600; }
+  .chains { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0; }
+  .chain { background: #E8DCC8; border: 1px solid #C4A335; padding: 2px 8px; font-size: 0.75em; font-family: Verdana, sans-serif; color: #1B3A5C; }
+  code { background: #E8DCC8; padding: 2px 5px; font-size: 0.85em; color: #333; font-family: 'Courier New', monospace; }
+  pre { background: #1B3A5C; border: 2px inset #999; padding: 12px; overflow-x: auto; margin: 10px 0; font-size: 0.8em; line-height: 1.5; color: #D4E4F7; font-family: 'Courier New', monospace; }
+  a { color: #1B3A5C; text-decoration: underline; }
+  a:hover { color: #C4A335; }
+  .links { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+  .links a { background: linear-gradient(180deg, #E8DCC8, #D5C9A5); border: 2px outset #C4A335; padding: 6px 14px; font-size: 0.85em; text-decoration: none; color: #1B3A5C; font-family: Verdana, sans-serif; }
+  .links a:hover { background: linear-gradient(180deg, #D5C9A5, #C4A335); }
   .proof { margin: 8px 0; }
-  .proof a { font-family: monospace; font-size: 0.85em; }
-  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #222; color: #555; font-size: 0.8em; }
-  .trust-section { background: #111; border: 1px solid #222; border-radius: 12px; padding: 24px; margin: 24px 0; }
-  .trust-badges { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
-  .trust-badge { display: inline-flex; align-items: center; gap: 6px; background: #0d2818; border: 1px solid #1a5c2e; color: #4ade80; padding: 6px 14px; border-radius: 8px; font-size: 0.85em; font-weight: 500; }
-  .trust-badge .check { color: #4ade80; font-size: 1.1em; }
-  .trust-badge.loading { background: #1a1a2e; border-color: #333; color: #888; }
-  .trust-meta { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0; font-size: 0.9em; }
-  .trust-meta span { color: #aaa; }
-  .trust-meta strong { color: #fff; }
-  .trust-meta a { color: #60a5fa; }
-  .expiry-bar { height: 6px; background: #222; border-radius: 3px; margin: 8px 0; overflow: hidden; }
-  .expiry-bar .fill { height: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); border-radius: 3px; transition: width 0.5s; }
-  .skills-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
-  .skill-chip { background: #1a1a2e; border: 1px solid #333; padding: 4px 10px; border-radius: 6px; font-size: 0.8em; color: #c0c0c0; }
-  .skill-chip .tag { color: #60a5fa; font-size: 0.75em; margin-left: 4px; }
+  .proof a { font-family: 'Courier New', monospace; font-size: 0.8em; }
+  .footer { margin-top: 30px; padding-top: 16px; border-top: 2px solid #C4A335; color: #999; font-size: 0.75em; font-family: Verdana, sans-serif; }
+  .trust-section { background: #FDFAF3; border: 2px solid #C4A335; padding: 18px; margin: 20px 0; }
+  .trust-badges { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+  .trust-badge { display: inline-flex; align-items: center; gap: 5px; background: #2B7A3A; border: 2px outset #4CAF50; color: #fff; padding: 4px 12px; font-size: 0.8em; font-weight: bold; font-family: Verdana, sans-serif; }
+  .trust-badge .check { color: #C4FF6B; font-size: 1em; }
+  .trust-badge.loading { background: #999; border-color: #777; color: #eee; }
+  .trust-meta { display: flex; gap: 20px; flex-wrap: wrap; margin: 10px 0; font-size: 0.85em; }
+  .trust-meta span { color: #555; }
+  .trust-meta strong { color: #1B3A5C; }
+  .trust-meta a { color: #1B3A5C; }
+  .expiry-bar { height: 8px; background: #DDD5C3; border: 1px inset #999; margin: 8px 0; overflow: hidden; }
+  .expiry-bar .fill { height: 100%; background: linear-gradient(90deg, #2B7A3A, #4CAF50); transition: width 0.5s; }
+  .info-box { background: #FDFAF3; border: 2px solid #C4A335; padding: 16px; margin: 16px 0; }
+  .info-box p { font-size: 0.9em; line-height: 1.6; }
+  .feature-card { background: #FDFAF3; border: 2px solid #C4A335; padding: 14px; margin-bottom: 12px; }
+  .feature-card p:first-child { font-weight: bold; margin-bottom: 4px; }
+  .feature-card p:last-child { font-size: 0.85em; color: #555; }
+  .demo-btn-free { background: linear-gradient(180deg, #3A8C4A, #2B7A3A); border: 2px outset #4CAF50; color: #fff; padding: 6px 14px; cursor: pointer; font-size: 0.8em; font-family: Verdana, sans-serif; font-weight: bold; }
+  .demo-btn-free:hover { background: linear-gradient(180deg, #2B7A3A, #1A5C2A); }
+  .demo-btn-paid { background: linear-gradient(180deg, #3A6C9A, #2B5C8A); border: 2px outset #5A9CCA; color: #fff; padding: 6px 14px; cursor: pointer; font-size: 0.8em; font-family: Verdana, sans-serif; font-weight: bold; }
+  .demo-btn-paid:hover { background: linear-gradient(180deg, #2B5C8A, #1B3A5C); }
+  .demo-btn-gold { background: linear-gradient(180deg, #D4A535, #C4A335); border: 2px outset #E8C84A; color: #1B3A5C; padding: 6px 14px; cursor: pointer; font-size: 0.8em; font-family: Verdana, sans-serif; font-weight: bold; }
+  .demo-btn-gold:hover { background: linear-gradient(180deg, #C4A335, #A08025); }
 </style>
 </head>
 <body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-links">
+      <a href="/agent.json">ERC-8004</a>
+      <a href="/x402-discovery">x402 Discovery</a>
+      <a href="/api/self-verify">Trust Card</a>
+      <a href="https://github.com/onchainexpat/askjeev">GitHub</a>
+    </div>
+    <div class="topbar-links">
+      <a href="https://basescan.org/address/0x6E5adF9C48203D239704c16268394adf0A21C6D0">BaseScan</a>
+      <a href="https://celoscan.io/address/0xaC3DF9ABf80d0F5c020C06B04Cced27763355944">CeloScan</a>
+    </div>
+  </div>
+</div>
 <div class="container">
-  <h1>AskJeev <span class="badge">live</span></h1>
-  <p class="tagline">An autonomous AI agent that earns money, trades across 18 chains, generates uncensored images, and proves it's human-backed — all without a human in the loop.</p>
+  <h1>AskJeev <span class="badge">LIVE</span></h1>
+  <p class="tagline">Your autonomous agent butler — earning, trading across 18 chains, generating images, and proving it's human-backed since 2026.</p>
 
-  <div style="background:#111;border:1px solid #222;border-radius:12px;padding:20px;margin:20px 0;">
-    <p style="color:#aaa;font-size:0.95em;line-height:1.7;margin:0;">
-      <strong style="color:#fff;">The problem:</strong> AI agents need to transact autonomously, but there's no trust infrastructure. How does one agent know another is real? How do you gate sensitive content by age without KYC?
-    </p>
-    <p style="color:#aaa;font-size:0.95em;line-height:1.7;margin:10px 0 0;">
-      <strong style="color:#fff;">AskJeev combines three primitives:</strong>
-      <strong style="color:#60a5fa;">x402</strong> (agent-to-agent payments),
-      <strong style="color:#4ade80;">Self Protocol</strong> (ZK proof-of-human identity on Celo), and
-      <strong style="color:#f59e0b;">ERC-8004</strong> (on-chain agent registry) —
+  <div class="info-box">
+    <p><strong>The problem:</strong> AI agents need to transact autonomously, but there's no trust infrastructure. How does one agent know another is real? How do you gate sensitive content by age without KYC?</p>
+    <p style="margin-top:8px;"><strong>AskJeev combines three primitives:</strong>
+      <strong style="color:#2B5C8A;">x402</strong> (agent-to-agent payments),
+      <strong style="color:#2B7A3A;">Self Protocol</strong> (ZK proof-of-human identity on Celo), and
+      <strong style="color:#C4A335;">ERC-8004</strong> (on-chain agent registry) —
       into a self-sustaining agent that earns, trades, creates, and serves.
     </p>
   </div>
@@ -106,19 +129,17 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   </div>
 
   <h2>What Makes This Different</h2>
-  <div style="display:grid;gap:16px;margin:12px 0;">
-    <div style="background:#111;border:1px solid #222;border-radius:10px;padding:16px;">
-      <p style="color:#f59e0b;font-weight:600;margin-bottom:4px;">ZK Age-Gated Image Generation</p>
-      <p style="color:#aaa;font-size:0.9em;">Uncensored AI image generation via Venice AI — but only for agents that prove they're backed by a human aged 18+ via Self Protocol's ZK passport proof. No KYC, no data leak. First-of-its-kind age gate without identity disclosure.</p>
-    </div>
-    <div style="background:#111;border:1px solid #222;border-radius:10px;padding:16px;">
-      <p style="color:#60a5fa;font-weight:600;margin-bottom:4px;">Identity-Tiered DeFi Access</p>
-      <p style="color:#aaa;font-size:0.9em;">Self-verified agents get premium arbitrage scanning (17 chains, AI analysis, 0.01% thresholds). Unverified agents get basic access (5 chains). Real economic incentive for agents to prove identity.</p>
-    </div>
-    <div style="background:#111;border:1px solid #222;border-radius:10px;padding:16px;">
-      <p style="color:#4ade80;font-weight:600;margin-bottom:4px;">Self-Sustaining Economics</p>
-      <p style="color:#aaa;font-size:0.9em;">9 paid API endpoints earn USDC via x402 protocol. Revenue funds Bankr LLM inference, Uniswap swaps, and Venice AI calls. The agent pays for its own compute from service fees.</p>
-    </div>
+  <div class="feature-card">
+    <p style="color:#C4A335;">ZK Age-Gated Image Generation</p>
+    <p>Uncensored AI image generation via Venice AI — but only for agents that prove they're backed by a human aged 18+ via Self Protocol's ZK passport proof. No KYC, no data leak. First-of-its-kind age gate without identity disclosure.</p>
+  </div>
+  <div class="feature-card">
+    <p style="color:#2B5C8A;">Identity-Tiered DeFi Access</p>
+    <p>Self-verified agents get premium arbitrage scanning (17 chains, AI analysis, 0.01% thresholds). Unverified agents get basic access (5 chains). Real economic incentive for agents to prove identity.</p>
+  </div>
+  <div class="feature-card">
+    <p style="color:#2B7A3A;">Self-Sustaining Economics</p>
+    <p>9 paid API endpoints earn USDC via x402 protocol. Revenue funds Bankr LLM inference, Uniswap swaps, and Venice AI calls. The agent pays for its own compute from service fees.</p>
   </div>
 
   <div class="trust-section" id="trust-profile">
@@ -185,41 +206,41 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   </script>
 
   <h2>Live Demo</h2>
-  <div id="wallet-section" style="background:#111;border:1px solid #222;border-radius:10px;padding:16px;margin:0 0 16px;">
+  <div style="background:#FDFAF3;border:2px solid #C4A335;padding:12px;margin:0 0 14px;">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
       <div>
-        <span style="color:#888;font-size:0.9em;">Wallet:</span>
-        <span id="wallet-addr" style="color:#fff;font-family:monospace;font-size:0.85em;">Not connected</span>
-        <span id="wallet-bal" style="color:#4ade80;font-size:0.85em;margin-left:8px;"></span>
+        <span style="color:#666;font-size:0.85em;font-family:Verdana,sans-serif;">Wallet:</span>
+        <span id="wallet-addr" style="color:#1B3A5C;font-family:'Courier New',monospace;font-size:0.85em;">Not connected</span>
+        <span id="wallet-bal" style="color:#2B7A3A;font-size:0.85em;margin-left:8px;font-family:Verdana,sans-serif;"></span>
       </div>
-      <button id="connect-btn" onclick="connectWallet()" style="background:#1a1a2e;border:1px solid #60a5fa;color:#60a5fa;padding:6px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Connect Wallet</button>
+      <button id="connect-btn" onclick="connectWallet()" class="demo-btn-paid">Connect Wallet</button>
     </div>
   </div>
 
-  <p style="color:#888;font-size:0.9em;margin-bottom:12px;">Free demo endpoints return live data. Paid endpoints show the x402 payment wall ($0.005–$0.03 USDC on Base).</p>
+  <p style="color:#666;font-size:0.85em;margin-bottom:10px;font-family:Verdana,sans-serif;">Free demo endpoints return live data. Paid endpoints show the x402 payment wall ($0.005-$0.03 USDC on Base).</p>
 
-  <div style="display:grid;gap:10px;margin:12px 0;">
-    <p style="color:#aaa;font-size:0.8em;margin:0;">Free — live results:</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="demoCall('/api/self-verify','GET')" style="background:#0d2818;border:1px solid #1a5c2e;color:#4ade80;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Agent Trust Card</button>
-      <button onclick="demoCall('/api/demo/arbitrage','GET')" style="background:#0d2818;border:1px solid #1a5c2e;color:#4ade80;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">18-Chain Arbitrage (live)</button>
-      <button onclick="demoCall('/api/demo/balances','GET')" style="background:#0d2818;border:1px solid #1a5c2e;color:#4ade80;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Agent Wallet Balance</button>
-      <button onclick="demoCall('/health','GET')" style="background:#0d2818;border:1px solid #1a5c2e;color:#4ade80;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Health Check</button>
+  <div style="margin:10px 0;">
+    <p style="color:#1B3A5C;font-size:0.8em;margin:0 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Free — live results:</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button onclick="demoCall('/api/self-verify','GET')" class="demo-btn-free">Agent Trust Card</button>
+      <button onclick="demoCall('/api/demo/arbitrage','GET')" class="demo-btn-free">18-Chain Arbitrage (live)</button>
+      <button onclick="demoCall('/api/demo/balances','GET')" class="demo-btn-free">Agent Wallet Balance</button>
+      <button onclick="demoCall('/health','GET')" class="demo-btn-free">Health Check</button>
     </div>
-    <p style="color:#aaa;font-size:0.8em;margin:8px 0 0;">Paid — x402 payment required (USDC on Base):</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="demoCall('/api/arbitrage','POST',{mode:'cross-chain',chains:['ethereum','base','unichain','zksync','linea'],minSpreadPercent:0})" title="Full 5-chain WETH arbitrage scan with Venice AI analysis (paid version of the free demo)." style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Full Arbitrage ($0.01)</button>
-      <button onclick="demoCall('/api/generate-image','POST',{prompt:'a cyberpunk robot butler',model:'chroma',width:512,height:512})" title="Uncensored AI image generation via Venice Chroma model. Requires Self Agent ID (18+ ZK passport proof). Returns 403 without verification." style="background:#2a1a0a;border:1px solid #5c3a1a;color:#f59e0b;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Image Gen — Self 18+ ($0.03)</button>
-      <button onclick="demoCall('/api/bridge','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831',amount:'1000000',chainIn:'base',chainOut:'arbitrum'})" title="Move 1 USDC from Base to Arbitrum via Across Protocol (ERC-7683 cross-chain intent standard)." style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Bridge ($0.01)</button>
-      <button onclick="demoCall('/api/ask','POST',{prompt:'What is cross-chain arbitrage?'})" title="Ask any question — routed to Bankr LLM Gateway (15 models including Claude, GPT, Gemini). USDC-funded inference." style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Ask Bankr ($0.01)</button>
+    <p style="color:#1B3A5C;font-size:0.8em;margin:10px 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Paid — x402 payment required (USDC on Base):</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button onclick="demoCall('/api/arbitrage','POST',{mode:'cross-chain',chains:['ethereum','base','unichain','zksync','linea'],minSpreadPercent:0})" title="Full 5-chain WETH arbitrage scan with Venice AI analysis." class="demo-btn-paid">Full Arbitrage ($0.01)</button>
+      <button onclick="demoCall('/api/generate-image','POST',{prompt:'a cyberpunk robot butler serving cocktails in a neon Tokyo alley',model:'chroma',width:512,height:512})" title="Uncensored AI image generation. Requires Self Agent ID (18+ ZK passport proof)." class="demo-btn-gold">Image Gen — Self 18+ ($0.03)</button>
+      <button onclick="demoCall('/api/bridge','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831',amount:'1000000',chainIn:'base',chainOut:'arbitrum'})" title="Move 1 USDC from Base to Arbitrum via Across Protocol." class="demo-btn-paid">Bridge Base-Arb ($0.01)</button>
+      <button onclick="demoCall('/api/ask','POST',{prompt:'What is cross-chain arbitrage in 2 sentences?'})" title="Bankr LLM Gateway — 15 models, USDC-funded inference." class="demo-btn-paid">Ask Bankr ($0.01)</button>
     </div>
   </div>
-  <div id="demo-result" style="display:none;background:#0a0a0a;border:1px solid #222;border-radius:8px;padding:16px;margin:12px 0;max-height:400px;overflow-y:auto;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <span id="demo-status" style="font-size:0.85em;font-weight:600;"></span>
-      <button onclick="document.getElementById('demo-result').style.display='none'" style="background:none;border:none;color:#888;cursor:pointer;font-size:1.1em;">x</button>
+  <div id="demo-result" style="display:none;background:#1B3A5C;border:2px inset #999;padding:14px;margin:10px 0;max-height:420px;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <span id="demo-status" style="font-size:0.8em;font-weight:600;font-family:Verdana,sans-serif;color:#D4E4F7;"></span>
+      <button onclick="document.getElementById('demo-result').style.display='none'" style="background:none;border:none;color:#999;cursor:pointer;font-size:1.1em;font-family:Verdana,sans-serif;">X</button>
     </div>
-    <pre id="demo-json" style="margin:0;white-space:pre-wrap;word-break:break-all;font-size:0.8em;line-height:1.5;max-height:340px;overflow-y:auto;"></pre>
+    <pre id="demo-json" style="margin:0;white-space:pre-wrap;word-break:break-all;font-size:0.8em;line-height:1.5;max-height:360px;overflow-y:auto;color:#D4E4F7;background:transparent;border:none;padding:0;"></pre>
     <div id="demo-pay-btn"></div>
   </div>
   <script>
@@ -356,7 +377,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
         var payBtn = document.createElement('button');
         payBtn.textContent = 'Agent Self-Pay $' + price + ' & Call';
-        payBtn.style.cssText = 'background:#0d2818;border:1px solid #4ade80;color:#4ade80;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:0.9em;margin-top:12px;font-weight:600;';
+        payBtn.style.cssText = 'background:linear-gradient(180deg,#3A8C4A,#2B7A3A);border:2px outset #4CAF50;color:#fff;padding:8px 18px;cursor:pointer;font-size:0.85em;margin-top:10px;font-weight:bold;font-family:Verdana,sans-serif;';
         payBtn.onclick = function() { agentPay(path, body); };
         document.getElementById('demo-pay-btn').innerHTML = '';
         document.getElementById('demo-pay-btn').appendChild(payBtn);
@@ -445,18 +466,19 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     <p>Autonomous Swap 2: <a href="https://basescan.org/tx/0x1fa7d1c47205c5b384736c241928b53c287ebd940d60ac0273bfd5355cee3ed4">0x1fa7...3ed4</a></p>
   </div>
 
-  <h2>Links</h2>
+  <h2>Quick Links</h2>
   <div class="links">
-    <a href="https://github.com/onchainexpat/askjeev">GitHub</a>
-    <a href="/agent.json">ERC-8004 Manifest</a>
+    <a href="https://github.com/onchainexpat/askjeev">GitHub Repo</a>
+    <a href="/agent.json">Agent Manifest</a>
     <a href="/x402-discovery">x402 Discovery</a>
-    <a href="https://basescan.org/address/0x6E5adF9C48203D239704c16268394adf0A21C6D0">Wallet on BaseScan</a>
+    <a href="https://basescan.org/address/0x6E5adF9C48203D239704c16268394adf0A21C6D0">BaseScan</a>
+    <a href="https://celoscan.io/address/0xaC3DF9ABf80d0F5c020C06B04Cced27763355944">CeloScan</a>
   </div>
 
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v1.6.0</span>
+    <span style="float:right;">v2.0.0</span>
   </div>
 </div>
 </body>
