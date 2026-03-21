@@ -183,6 +183,70 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   })();
   </script>
 
+  <h2>Live Demo</h2>
+  <p style="color:#888;font-size:0.9em;margin-bottom:16px;">Click to call real endpoints. Free endpoints return live data. Paid endpoints show the x402 payment wall ($0.005–$0.03 USDC on Base).</p>
+
+  <div style="display:grid;gap:10px;margin:12px 0;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="demoCall('/api/self-verify','GET')" style="background:#0d2818;border:1px solid #1a5c2e;color:#4ade80;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Agent Trust Card (free)</button>
+      <button onclick="demoCall('/api/arbitrage','POST',{mode:'cross-chain',chains:['ethereum','base','unichain','zksync','linea'],minSpreadPercent:0})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">18-Chain Arbitrage ($0.01)</button>
+      <button onclick="demoCall('/api/generate-image','POST',{prompt:'a cyberpunk robot butler',model:'chroma',width:512,height:512})" style="background:#2a1a0a;border:1px solid #5c3a1a;color:#f59e0b;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Image Gen — Self 18+ ($0.03)</button>
+      <button onclick="demoCall('/api/limit-order','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0x4200000000000000000000000000000000000006',amount:'1000000',limitPrice:'0.0004',chain:'base'})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Limit Order ($0.01)</button>
+      <button onclick="demoCall('/api/bridge','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831',amount:'1000000',chainIn:'base',chainOut:'arbitrum'})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Bridge Base→Arb ($0.01)</button>
+      <button onclick="demoCall('/api/ask','POST',{prompt:'What is cross-chain arbitrage?'})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Ask (Bankr LLM) ($0.01)</button>
+      <button onclick="demoCall('/health','GET')" style="background:#1a1a2e;border:1px solid #333;color:#888;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Health (free)</button>
+    </div>
+  </div>
+  <div id="demo-result" style="display:none;background:#0a0a0a;border:1px solid #222;border-radius:8px;padding:16px;margin:12px 0;max-height:400px;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span id="demo-status" style="font-size:0.85em;font-weight:600;"></span>
+      <button onclick="document.getElementById('demo-result').style.display='none'" style="background:none;border:none;color:#888;cursor:pointer;font-size:1.1em;">x</button>
+    </div>
+    <pre id="demo-json" style="margin:0;white-space:pre-wrap;word-break:break-all;font-size:0.8em;line-height:1.5;max-height:340px;overflow-y:auto;"></pre>
+  </div>
+  <script>
+  function demoCall(path, method, body) {
+    var el = document.getElementById('demo-result');
+    var st = document.getElementById('demo-status');
+    var js = document.getElementById('demo-json');
+    el.style.display = 'block';
+    st.textContent = 'Calling ' + method + ' ' + path + '...';
+    st.style.color = '#888';
+    js.textContent = '';
+
+    var opts = { method: method, headers: {} };
+    if (body) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    }
+
+    var start = Date.now();
+    fetch(path, opts).then(function(r) {
+      var ms = Date.now() - start;
+      var color = r.status === 200 ? '#4ade80' : r.status === 402 ? '#f59e0b' : '#ef4444';
+      st.style.color = color;
+      st.textContent = method + ' ' + path + ' — ' + r.status + ' (' + ms + 'ms)';
+      return r.text().then(function(text) {
+        try {
+          var parsed = JSON.parse(text);
+          // Truncate base64 image data for display
+          if (parsed.images && parsed.images[0] && parsed.images[0].length > 200) {
+            parsed.images = ['[base64 image data — ' + parsed.images[0].length + ' chars]'];
+          }
+          js.textContent = JSON.stringify(parsed, null, 2);
+        } catch(e) {
+          js.textContent = text || '(empty response)';
+        }
+      });
+    }).catch(function(err) {
+      st.style.color = '#ef4444';
+      st.textContent = 'Error: ' + err.message;
+    });
+
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  </script>
+
   <h2>Paid API Endpoints</h2>
   <table>
     <tr><th>Endpoint</th><th>Method</th><th>Price</th><th>Description</th></tr>
