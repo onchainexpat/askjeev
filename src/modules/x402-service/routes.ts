@@ -237,12 +237,14 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       document.getElementById('connect-btn').style.borderColor = '#4ade80';
       document.getElementById('connect-btn').style.color = '#4ade80';
 
-      // Switch to Base (chainId 8453)
       try {
         await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x2105' }] });
-      } catch(e) {}
+      } catch(e) {
+        try {
+          await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: '0x2105', chainName: 'Base', nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://mainnet.base.org'], blockExplorerUrls: ['https://basescan.org'] }] });
+        } catch(e2) {}
+      }
 
-      // Get USDC balance on Base
       try {
         var usdcContract = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
         var balData = await window.ethereum.request({
@@ -256,6 +258,133 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       }
     } catch(e) {
       document.getElementById('wallet-addr').textContent = 'Connection rejected';
+    }
+  }
+
+  function randomHex(bytes) {
+    var arr = new Uint8Array(bytes);
+    crypto.getRandomValues(arr);
+    return '0x' + Array.from(arr).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+  }
+
+  async function signAndPay(path, method, body, paymentReqs) {
+    var el = document.getElementById('demo-result');
+    var st = document.getElementById('demo-status');
+    var js = document.getElementById('demo-json');
+
+    st.textContent = 'Signing x402 payment in wallet...';
+    st.style.color = '#f59e0b';
+
+    var req = paymentReqs.accepts[0];
+    var now = Math.floor(Date.now() / 1000);
+    var nonce = randomHex(32);
+
+    var authorization = {
+      from: connectedAddress,
+      to: req.payTo,
+      value: req.amount,
+      validAfter: (now - 600).toString(),
+      validBefore: (now + req.maxTimeoutSeconds).toString(),
+      nonce: nonce
+    };
+
+    var domain = {
+      name: req.extra.name,
+      version: req.extra.version,
+      chainId: 8453,
+      verifyingContract: req.asset
+    };
+
+    var types = {
+      TransferWithAuthorization: [
+        { name: 'from', type: 'address' },
+        { name: 'to', type: 'address' },
+        { name: 'value', type: 'uint256' },
+        { name: 'validAfter', type: 'uint256' },
+        { name: 'validBefore', type: 'uint256' },
+        { name: 'nonce', type: 'bytes32' }
+      ]
+    };
+
+    var message = {
+      from: connectedAddress,
+      to: req.payTo,
+      value: req.amount,
+      validAfter: authorization.validAfter,
+      validBefore: authorization.validBefore,
+      nonce: nonce
+    };
+
+    var typedData = JSON.stringify({
+      types: Object.assign({ EIP712Domain: [
+        { name: 'name', type: 'string' },
+        { name: 'version', type: 'string' },
+        { name: 'chainId', type: 'uint256' },
+        { name: 'verifyingContract', type: 'address' }
+      ]}, types),
+      primaryType: 'TransferWithAuthorization',
+      domain: domain,
+      message: message
+    });
+
+    try {
+      var signature = await window.ethereum.request({
+        method: 'eth_signTypedData_v4',
+        params: [connectedAddress, typedData]
+      });
+
+      var paymentPayload = {
+        x402Version: 2,
+        scheme: 'exact',
+        network: req.network,
+        payload: {
+          authorization: authorization,
+          signature: signature
+        }
+      };
+
+      var paymentHeader = btoa(JSON.stringify(paymentPayload));
+
+      st.textContent = 'Payment signed! Calling ' + path + '...';
+      st.style.color = '#4ade80';
+
+      var opts = { method: method, headers: { 'PAYMENT-SIGNATURE': paymentHeader } };
+      if (body) {
+        opts.headers['Content-Type'] = 'application/json';
+        opts.body = JSON.stringify(body);
+      }
+
+      var start = Date.now();
+      var r = await fetch(path, opts);
+      var ms = Date.now() - start;
+      var color = r.status === 200 ? '#4ade80' : '#ef4444';
+      st.style.color = color;
+      st.textContent = method + ' ' + path + ' — ' + r.status + ' (' + ms + 'ms) [x402 PAID]';
+
+      var text = await r.text();
+      try {
+        var parsed = JSON.parse(text);
+        if (parsed.images && parsed.images[0] && parsed.images[0].length > 200) {
+          parsed.images = ['[base64 image data — ' + parsed.images[0].length + ' chars]'];
+        }
+        js.textContent = JSON.stringify(parsed, null, 2);
+      } catch(e) {
+        js.textContent = text || '(empty response)';
+      }
+
+      // Refresh USDC balance
+      try {
+        var usdcContract = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+        var balData = await window.ethereum.request({
+          method: 'eth_call',
+          params: [{ to: usdcContract, data: '0x70a08231000000000000000000000000' + connectedAddress.slice(2) }, 'latest']
+        });
+        document.getElementById('wallet-bal').textContent = (parseInt(balData, 16) / 1e6).toFixed(2) + ' USDC (Base)';
+      } catch(e) {}
+
+    } catch(e) {
+      st.style.color = '#ef4444';
+      st.textContent = 'Payment rejected: ' + (e.message || 'User denied signature');
     }
   }
 
@@ -282,15 +411,39 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       st.textContent = method + ' ' + path + ' — ' + r.status + ' (' + ms + 'ms)';
 
       if (r.status === 402) {
-        js.textContent = JSON.stringify({
-          status: '402 Payment Required',
-          protocol: 'x402 — agent-to-agent payments',
-          message: 'This endpoint requires USDC payment on Base via x402 protocol.',
-          payTo: '0x6E5adF9C48203D239704c16268394adf0A21C6D0',
-          network: 'eip155:8453 (Base)',
-          howToPay: 'Agents pay automatically via @x402/fetch. Connect a wallet with USDC on Base to interact.',
-          discovery: window.location.origin + '/x402-discovery'
-        }, null, 2);
+        var payReqHeader = r.headers.get('payment-required');
+        var payReqs = null;
+        if (payReqHeader) {
+          try { payReqs = JSON.parse(atob(payReqHeader)); } catch(e) {}
+        }
+
+        if (connectedAddress && payReqs && payReqs.accepts && payReqs.accepts[0]) {
+          var req = payReqs.accepts[0];
+          var price = (parseInt(req.amount) / 1e6).toFixed(3);
+          js.textContent = JSON.stringify({
+            status: '402 Payment Required',
+            price: '$' + price + ' USDC',
+            payTo: req.payTo,
+            network: req.network + ' (Base)',
+            walletConnected: connectedAddress
+          }, null, 2);
+          js.textContent += '\\n\\nWallet connected — click Pay & Call below to sign the x402 payment.';
+
+          var payBtn = document.createElement('button');
+          payBtn.textContent = 'Pay $' + price + ' USDC & Call';
+          payBtn.style.cssText = 'background:#0d2818;border:1px solid #4ade80;color:#4ade80;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:0.9em;margin-top:12px;font-weight:600;';
+          payBtn.onclick = function() { signAndPay(path, method, body, payReqs); };
+          js.parentNode.appendChild(payBtn);
+        } else {
+          js.textContent = JSON.stringify({
+            status: '402 Payment Required',
+            protocol: 'x402 — agent-to-agent payments',
+            message: connectedAddress ? 'Parsing payment requirements...' : 'Connect wallet above to pay and call this endpoint.',
+            payTo: '0x6E5adF9C48203D239704c16268394adf0A21C6D0',
+            network: 'eip155:8453 (Base)',
+            discovery: window.location.origin + '/x402-discovery'
+          }, null, 2);
+        }
         return;
       }
 
