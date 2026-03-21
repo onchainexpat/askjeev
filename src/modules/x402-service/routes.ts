@@ -315,16 +315,32 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       nonce: nonce
     };
 
+    var msgForSigning = {
+      from: connectedAddress,
+      to: req.payTo,
+      value: req.amount,
+      validAfter: parseInt(authorization.validAfter),
+      validBefore: parseInt(authorization.validBefore),
+      nonce: nonce
+    };
+
     var typedData = JSON.stringify({
-      types: Object.assign({ EIP712Domain: [
+      types: { EIP712Domain: [
         { name: 'name', type: 'string' },
         { name: 'version', type: 'string' },
         { name: 'chainId', type: 'uint256' },
         { name: 'verifyingContract', type: 'address' }
-      ]}, types),
+      ], TransferWithAuthorization: [
+        { name: 'from', type: 'address' },
+        { name: 'to', type: 'address' },
+        { name: 'value', type: 'uint256' },
+        { name: 'validAfter', type: 'uint256' },
+        { name: 'validBefore', type: 'uint256' },
+        { name: 'nonce', type: 'bytes32' }
+      ]},
       primaryType: 'TransferWithAuthorization',
       domain: domain,
-      message: message
+      message: msgForSigning
     });
 
     try {
