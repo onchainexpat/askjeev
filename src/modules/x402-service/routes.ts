@@ -588,7 +588,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       const { endpoint, body: reqBody } = await c.req.json();
       if (!endpoint) return c.json({ error: 'endpoint required' }, 400);
 
-      const allowedEndpoints = ['/api/arbitrage', '/api/ask', '/api/bridge', '/api/swap-quote', '/api/private-analyze'];
+      const allowedEndpoints = ['/api/arbitrage', '/api/ask', '/api/bridge', '/api/swap-quote', '/api/private-analyze', '/api/generate-image'];
       if (!allowedEndpoints.includes(endpoint)) {
         return c.json({ error: 'Endpoint not available for demo', allowed: allowedEndpoints }, 400);
       }
