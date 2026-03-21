@@ -514,7 +514,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v2.6.0</span>
+    <span style="float:right;">v2.7.0</span>
   </div>
 </div>
 </body>
@@ -629,25 +629,27 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   app.get('/.well-known/x402', x402Discovery);
   app.get('/x402-discovery', x402Discovery);
 
-  // Debug: echo back payment headers (for debugging browser x402 flow)
+  // Debug: echo back payment headers and show what the bridge produces
   app.post('/api/debug-payment', async (c) => {
     const paymentSig = c.req.header('payment-signature') || c.req.header('PAYMENT-SIGNATURE');
     const xPayment = c.req.header('x-payment') || c.req.header('X-PAYMENT');
-    let decoded = null;
-    const raw = paymentSig || xPayment;
-    if (raw) {
-      try { decoded = JSON.parse(atob(raw)); } catch(e) {
-        try { decoded = JSON.parse(Buffer.from(raw, 'base64').toString()); } catch(e2) { decoded = 'decode failed'; }
-      }
+    let decodedPaymentSig = null;
+    let decodedXPayment = null;
+    if (paymentSig) {
+      try { decodedPaymentSig = JSON.parse(Buffer.from(paymentSig, 'base64').toString()); } catch { decodedPaymentSig = 'decode failed'; }
+    }
+    if (xPayment) {
+      try { decodedXPayment = JSON.parse(Buffer.from(xPayment, 'base64').toString()); } catch { decodedXPayment = 'decode failed'; }
     }
     const body = await c.req.json().catch(() => null);
     return c.json({
-      headers: {
-        'payment-signature': paymentSig || null,
-        'x-payment': xPayment || null,
-        'content-type': c.req.header('content-type'),
+      receivedHeaders: {
+        'payment-signature': !!paymentSig,
+        'x-payment': !!xPayment,
       },
-      decodedPayment: decoded,
+      decodedPaymentSignature: decodedPaymentSig,
+      decodedXPayment: decodedXPayment,
+      bridgeApplied: !!xPayment && !!paymentSig,
       body,
     });
   });
