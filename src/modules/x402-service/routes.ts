@@ -208,11 +208,11 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     </div>
     <p style="color:#aaa;font-size:0.8em;margin:8px 0 0;">Paid — x402 payment required (USDC on Base):</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="demoCall('/api/arbitrage','POST',{mode:'cross-chain',chains:['ethereum','base','unichain','zksync','linea'],minSpreadPercent:0})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Full Arbitrage ($0.01)</button>
-      <button onclick="demoCall('/api/generate-image','POST',{prompt:'a cyberpunk robot butler',model:'chroma',width:512,height:512})" style="background:#2a1a0a;border:1px solid #5c3a1a;color:#f59e0b;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Image Gen — Self 18+ ($0.03)</button>
-      <button onclick="demoCall('/api/limit-order','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0x4200000000000000000000000000000000000006',amount:'1000000',limitPrice:'0.0004',chain:'base'})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Limit Order ($0.01)</button>
-      <button onclick="demoCall('/api/bridge','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831',amount:'1000000',chainIn:'base',chainOut:'arbitrum'})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Bridge ($0.01)</button>
-      <button onclick="demoCall('/api/ask','POST',{prompt:'What is cross-chain arbitrage?'})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Ask Bankr ($0.01)</button>
+      <button onclick="demoCall('/api/arbitrage','POST',{mode:'cross-chain',chains:['ethereum','base','unichain','zksync','linea'],minSpreadPercent:0})" title="Full 5-chain WETH arbitrage scan with Venice AI analysis (paid version of the free demo)." style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Full Arbitrage ($0.01)</button>
+      <button onclick="demoCall('/api/generate-image','POST',{prompt:'a cyberpunk robot butler',model:'chroma',width:512,height:512})" title="Uncensored AI image generation via Venice Chroma model. Requires Self Agent ID (18+ ZK passport proof). Returns 403 without verification." style="background:#2a1a0a;border:1px solid #5c3a1a;color:#f59e0b;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Image Gen — Self 18+ ($0.03)</button>
+      <button onclick="demoCall('/api/limit-order','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0x4200000000000000000000000000000000000006',amount:'1000000',limitPrice:'0.0004',chain:'base'})" title="Set a USDC→WETH limit order on Base via UniswapX. Zero gas — filler network executes when your price hits." style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Limit Order ($0.01)</button>
+      <button onclick="demoCall('/api/bridge','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831',amount:'1000000',chainIn:'base',chainOut:'arbitrum'})" title="Move 1 USDC from Base to Arbitrum via Across Protocol (ERC-7683 cross-chain intent standard)." style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Bridge ($0.01)</button>
+      <button onclick="demoCall('/api/ask','POST',{prompt:'What is cross-chain arbitrage?'})" title="Ask any question — routed to Bankr LLM Gateway (15 models including Claude, GPT, Gemini). USDC-funded inference." style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Ask Bankr ($0.01)</button>
     </div>
   </div>
   <div id="demo-result" style="display:none;background:#0a0a0a;border:1px solid #222;border-radius:8px;padding:16px;margin:12px 0;max-height:400px;overflow-y:auto;">
@@ -269,112 +269,36 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     return '0x' + Array.from(arr).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
   }
 
-  async function signAndPay(path, method, body, paymentReqs) {
+  async function agentPay(path, body) {
     var el = document.getElementById('demo-result');
     var st = document.getElementById('demo-status');
     var js = document.getElementById('demo-json');
+    document.getElementById('demo-pay-btn').innerHTML = '';
 
-    st.textContent = 'Signing x402 payment in wallet...';
+    st.textContent = 'Agent paying via x402 from its own wallet...';
     st.style.color = '#f59e0b';
-
-    var req = paymentReqs.accepts[0];
-    var now = Math.floor(Date.now() / 1000);
-    var nonce = randomHex(32);
-
-    var authorization = {
-      from: ethers.getAddress(connectedAddress),
-      to: ethers.getAddress(req.payTo),
-      value: req.amount,
-      validAfter: (now - 600).toString(),
-      validBefore: (now + req.maxTimeoutSeconds).toString(),
-      nonce: nonce
-    };
+    js.textContent = '';
 
     try {
-      var provider = new ethers.BrowserProvider(window.ethereum);
-      var signer = await provider.getSigner();
-
-      var signature = await signer.signTypedData(
-        {
-          name: req.extra.name,
-          version: req.extra.version,
-          chainId: 8453,
-          verifyingContract: ethers.getAddress(req.asset)
-        },
-        {
-          TransferWithAuthorization: [
-            { name: 'from', type: 'address' },
-            { name: 'to', type: 'address' },
-            { name: 'value', type: 'uint256' },
-            { name: 'validAfter', type: 'uint256' },
-            { name: 'validBefore', type: 'uint256' },
-            { name: 'nonce', type: 'bytes32' }
-          ]
-        },
-        {
-          from: ethers.getAddress(connectedAddress),
-          to: ethers.getAddress(req.payTo),
-          value: BigInt(req.amount),
-          validAfter: BigInt(authorization.validAfter),
-          validBefore: BigInt(authorization.validBefore),
-          nonce: nonce
-        }
-      );
-
-      var paymentPayload = {
-        x402Version: 2,
-        payload: {
-          authorization: authorization,
-          signature: signature
-        }
-      };
-
-      var paymentHeader = btoa(unescape(encodeURIComponent(JSON.stringify(paymentPayload))));
-
-      st.textContent = 'Payment signed! Calling ' + path + '...';
-      st.style.color = '#4ade80';
-
-      // Debug: log what we're sending
-      console.log('x402 payment payload:', JSON.stringify(paymentPayload, null, 2));
-      console.log('x402 header:', paymentHeader.slice(0, 100) + '...');
-
-      var opts = { method: method, headers: { 'PAYMENT-SIGNATURE': paymentHeader } };
-      if (body) {
-        opts.headers['Content-Type'] = 'application/json';
-        opts.body = JSON.stringify(body);
-      }
-
       var start = Date.now();
-      var r = await fetch(path, opts);
+      var r = await fetch('/api/demo/pay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: path, body: body }),
+      });
       var ms = Date.now() - start;
       var color = r.status === 200 ? '#4ade80' : '#ef4444';
       st.style.color = color;
-      st.textContent = method + ' ' + path + ' — ' + r.status + ' (' + ms + 'ms) [x402 PAID]';
+      st.textContent = 'POST ' + path + ' — ' + r.status + ' (' + ms + 'ms) [x402 PAID by agent]';
 
-      var text = await r.text();
-      try {
-        var parsed = JSON.parse(text);
-        if (parsed.images && parsed.images[0] && parsed.images[0].length > 200) {
-          parsed.images = ['[base64 image data — ' + parsed.images[0].length + ' chars]'];
-        }
-        js.textContent = JSON.stringify(parsed, null, 2);
-      } catch(e) {
-        js.textContent = text || '(empty response)';
+      var data = await r.json();
+      if (data.result && data.result.images && data.result.images[0] && data.result.images[0].length > 200) {
+        data.result.images = ['[base64 image data — ' + data.result.images[0].length + ' chars]'];
       }
-
-      // Refresh USDC balance
-      try {
-        var usdcContract = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
-        var balData = await window.ethereum.request({
-          method: 'eth_call',
-          params: [{ to: usdcContract, data: '0x70a08231000000000000000000000000' + connectedAddress.slice(2) }, 'latest']
-        });
-        document.getElementById('wallet-bal').textContent = (parseInt(balData, 16) / 1e6).toFixed(2) + ' USDC (Base)';
-      } catch(e) {}
-
+      js.textContent = JSON.stringify(data, null, 2);
     } catch(e) {
       st.style.color = '#ef4444';
-      st.textContent = 'Payment rejected: ' + (e.message || 'User denied signature');
+      st.textContent = 'Error: ' + (e.message || 'Request failed');
     }
   }
 
@@ -408,34 +332,24 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
           try { payReqs = JSON.parse(atob(payReqHeader)); } catch(e) {}
         }
 
-        if (connectedAddress && payReqs && payReqs.accepts && payReqs.accepts[0]) {
-          var req = payReqs.accepts[0];
-          var price = (parseInt(req.amount) / 1e6).toFixed(3);
-          js.textContent = JSON.stringify({
-            status: '402 Payment Required',
-            price: '$' + price + ' USDC',
-            payTo: req.payTo,
-            network: req.network + ' (Base)',
-            walletConnected: connectedAddress
-          }, null, 2);
-          js.textContent += '\\n\\nWallet connected — click Pay & Call below to sign the x402 payment.';
+        var req = (payReqs && payReqs.accepts && payReqs.accepts[0]) ? payReqs.accepts[0] : null;
+        var price = req ? (parseInt(req.amount) / 1e6).toFixed(3) : '0.01';
 
-          var payBtn = document.createElement('button');
-          payBtn.textContent = 'Pay $' + price + ' USDC & Call';
-          payBtn.style.cssText = 'background:#0d2818;border:1px solid #4ade80;color:#4ade80;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:0.9em;margin-top:12px;font-weight:600;';
-          payBtn.onclick = function() { signAndPay(path, method, body, payReqs); };
-          document.getElementById('demo-pay-btn').innerHTML = '';
-          document.getElementById('demo-pay-btn').appendChild(payBtn);
-        } else {
-          js.textContent = JSON.stringify({
-            status: '402 Payment Required',
-            protocol: 'x402 — agent-to-agent payments',
-            message: connectedAddress ? 'Parsing payment requirements...' : 'Connect wallet above to pay and call this endpoint.',
-            payTo: '0x6E5adF9C48203D239704c16268394adf0A21C6D0',
-            network: 'eip155:8453 (Base)',
-            discovery: window.location.origin + '/x402-discovery'
-          }, null, 2);
-        }
+        js.textContent = JSON.stringify({
+          status: '402 Payment Required',
+          protocol: 'x402 — agent-to-agent payments',
+          price: '$' + price + ' USDC on Base',
+          payTo: req ? req.payTo : '0x6E5adF9C48203D239704c16268394adf0A21C6D0',
+          network: 'eip155:8453 (Base)',
+          message: 'Click below to have AskJeev pay from its own wallet (self-sustaining demo).'
+        }, null, 2);
+
+        var payBtn = document.createElement('button');
+        payBtn.textContent = 'Agent Self-Pay $' + price + ' & Call';
+        payBtn.style.cssText = 'background:#0d2818;border:1px solid #4ade80;color:#4ade80;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:0.9em;margin-top:12px;font-weight:600;';
+        payBtn.onclick = function() { agentPay(path, body); };
+        document.getElementById('demo-pay-btn').innerHTML = '';
+        document.getElementById('demo-pay-btn').appendChild(payBtn);
         return;
       }
 
@@ -667,6 +581,50 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       decodedPayment: decoded,
       body,
     });
+  });
+
+  // Demo proxy: agent pays for its own services via x402 (self-sustaining economics demo)
+  app.post('/api/demo/pay', async (c) => {
+    try {
+      const { endpoint, body: reqBody } = await c.req.json();
+      if (!endpoint) return c.json({ error: 'endpoint required' }, 400);
+
+      const allowedEndpoints = ['/api/arbitrage', '/api/ask', '/api/bridge', '/api/swap-quote', '/api/private-analyze'];
+      if (!allowedEndpoints.includes(endpoint)) {
+        return c.json({ error: 'Endpoint not available for demo', allowed: allowedEndpoints }, 400);
+      }
+
+      const { wrapFetchWithPayment, x402Client, x402HTTPClient } = await import('@x402/fetch');
+      const { ExactEvmScheme } = await import('@x402/evm/exact/client');
+
+      const account = getAccount();
+      const client = new x402Client();
+      client.register('eip155:8453', new ExactEvmScheme(account));
+      const httpClient = new x402HTTPClient(client);
+      const x402Fetch = wrapFetchWithPayment(fetch, httpClient);
+
+      const targetUrl = (deployedUrl || `http://localhost:${process.env.PORT || 3402}`) + endpoint;
+
+      const res = await x402Fetch(targetUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody || {}),
+      });
+
+      const data = await res.json();
+
+      await log('demo_pay', 'api/demo/pay', { endpoint, paidFrom: account.address }, { status: res.status });
+
+      return c.json({
+        paidBy: 'AskJeev agent wallet (self-sustaining)',
+        paidFrom: account.address,
+        endpoint,
+        status: res.status,
+        result: data,
+      });
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
   });
 
   // === Free API Endpoints (registered BEFORE x402 payment middleware) ===
