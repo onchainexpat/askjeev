@@ -188,15 +188,18 @@ npm test
 
 ## Hackathon Tracks
 
-Built for the [Synthesis Hackathon](https://synthesis.md) — competing across:
+Built for the [Synthesis Hackathon](https://synthesis.md) — submitting to 8 tracks:
 
-- **Synthesis Open Track** — community-funded
-- **Agent Services on Base** — discoverable x402 agent services
-- **Agentic Finance (Uniswap)** — real swaps with TxIDs
-- **Private Agents (Venice)** — zero-retention AI reasoning
-- **Best Bankr LLM Gateway Use** — self-sustaining inference economics
-- **Agents With Receipts (ERC-8004)** — verifiable agent identity
-- **Self Agent ID** — ZK-powered proof-of-human verification on Celo
+| Track | Sponsor | Why AskJeev Qualifies |
+|-------|---------|----------------------|
+| **Synthesis Open Track** | Community | Touches 7 sponsor technologies in one agent |
+| **Agentic Finance** | Uniswap | 18-chain arbitrage, gasless UniswapX limit orders, real swap TXs |
+| **Private Agents, Trusted Actions** | Venice AI | Zero-retention analysis + ZK age-gated uncensored image gen |
+| **Best Agent on Celo** | Celo | Self Agent ID #42 lives on Celo, ZK proof-of-human |
+| **Autonomous Trading Agent** | Base | Deployed on Base, autonomous swaps with real TxIDs |
+| **Best Bankr LLM Gateway Use** | Bankr | USDC-funded inference across 15 models, self-sustaining economics |
+| **Best Self Protocol Integration** | Self | Tiered access, age-gating, trust dashboard, sybil resistance |
+| **Let the Agent Cook** | Protocol Labs | ERC-8004 identity, autonomous discover-plan-execute loop |
 
 ## On-Chain Artifacts
 
