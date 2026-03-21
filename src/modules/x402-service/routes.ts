@@ -221,6 +221,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       <button onclick="document.getElementById('demo-result').style.display='none'" style="background:none;border:none;color:#888;cursor:pointer;font-size:1.1em;">x</button>
     </div>
     <pre id="demo-json" style="margin:0;white-space:pre-wrap;word-break:break-all;font-size:0.8em;line-height:1.5;max-height:340px;overflow-y:auto;"></pre>
+    <div id="demo-pay-btn"></div>
   </div>
   <script>
   var connectedAddress = null;
@@ -385,6 +386,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     st.textContent = 'Calling ' + method + ' ' + path + '...';
     st.style.color = '#888';
     js.textContent = '';
+    document.getElementById('demo-pay-btn').innerHTML = '';
 
     var opts = { method: method, headers: {} };
     if (body) {
@@ -422,7 +424,8 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
           payBtn.textContent = 'Pay $' + price + ' USDC & Call';
           payBtn.style.cssText = 'background:#0d2818;border:1px solid #4ade80;color:#4ade80;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:0.9em;margin-top:12px;font-weight:600;';
           payBtn.onclick = function() { signAndPay(path, method, body, payReqs); };
-          js.parentNode.appendChild(payBtn);
+          document.getElementById('demo-pay-btn').innerHTML = '';
+          document.getElementById('demo-pay-btn').appendChild(payBtn);
         } else {
           js.textContent = JSON.stringify({
             status: '402 Payment Required',
