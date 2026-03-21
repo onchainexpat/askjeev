@@ -370,58 +370,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   app.get('/.well-known/x402', x402Discovery);
   app.get('/x402-discovery', x402Discovery);
 
-  // === x402 Payment Middleware ===
-  // Applied BEFORE route handlers so unpaid requests get 402
-  // Dynamic import to avoid loading heavy crypto libs when payment is skipped
-  if (x402Config && !x402Config.skipPayment) {
-    const { paymentMiddleware, x402ResourceServer } = await import('@x402/hono');
-    const { HTTPFacilitatorClient } = await import('@x402/core/server');
-    const { ExactEvmScheme } = await import('@x402/evm/exact/server');
-
-    const walletAddress = getAccount().address;
-    const facilitatorClient = new HTTPFacilitatorClient({ url: x402Config.facilitatorUrl });
-    const resourceServer = new x402ResourceServer(facilitatorClient).register(
-      x402Config.network,
-      new ExactEvmScheme(),
-    );
-
-    const makeConfig = (price: string, description: string) => ({
-      accepts: {
-        scheme: 'exact' as const,
-        network: x402Config.network,
-        payTo: walletAddress,
-        price: `$${price}`,
-      },
-      description,
-      mimeType: 'application/json',
-    });
-
-    app.use(
-      paymentMiddleware(
-        {
-          'POST /api/swap-quote': makeConfig('0.005', 'Uniswap swap quote for any token pair on Base'),
-          'POST /api/private-analyze': makeConfig('0.02', 'Private financial analysis via Venice AI'),
-          'POST /api/ask': makeConfig('0.01', 'General reasoning via Bankr LLM Gateway'),
-          'POST /api/discover': makeConfig('0.01', 'x402 service discovery — Venice-ranked search'),
-          'POST /api/arbitrage': makeConfig('0.01', 'Cross-chain arbitrage detection between Base and Celo'),
-          'POST /api/rebalance': makeConfig('0.02', 'Private portfolio rebalancer with optional auto-execution'),
-          'POST /api/generate-image': makeConfig('0.03', 'Private uncensored image generation via Venice AI (Self-verified 18+ only)'),
-          'POST /api/limit-order': makeConfig('0.01', 'Gasless limit order via UniswapX filler network'),
-          'POST /api/bridge': makeConfig('0.01', 'Cross-chain bridge quote via Across Protocol'),
-        },
-        resourceServer,
-      ),
-    );
-  }
-
-  // === Self Agent ID Verification (optional layer) ===
-  // When Self headers are present, verifies the caller is human-backed.
-  // Non-required by default — agents without Self can still use x402 payment.
-  if (process.env.SELF_ENABLED === 'true') {
-    const { selfAgentAuth } = await import('../self/middleware.js');
-    const selfNetwork = (process.env.SELF_NETWORK as 'mainnet' | 'testnet') || 'mainnet';
-    app.use('/api/*', selfAgentAuth({ network: selfNetwork, required: false }));
-  }
+  // === Free API Endpoints (registered BEFORE x402 payment middleware) ===
 
   // Self verification status endpoint
   app.get('/api/self-status', (c) => {
@@ -505,6 +454,59 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       return c.json({ error: err.message, card: null }, 500);
     }
   });
+
+  // === x402 Payment Middleware ===
+  // Applied BEFORE route handlers so unpaid requests get 402
+  // Dynamic import to avoid loading heavy crypto libs when payment is skipped
+  if (x402Config && !x402Config.skipPayment) {
+    const { paymentMiddleware, x402ResourceServer } = await import('@x402/hono');
+    const { HTTPFacilitatorClient } = await import('@x402/core/server');
+    const { ExactEvmScheme } = await import('@x402/evm/exact/server');
+
+    const walletAddress = getAccount().address;
+    const facilitatorClient = new HTTPFacilitatorClient({ url: x402Config.facilitatorUrl });
+    const resourceServer = new x402ResourceServer(facilitatorClient).register(
+      x402Config.network,
+      new ExactEvmScheme(),
+    );
+
+    const makeConfig = (price: string, description: string) => ({
+      accepts: {
+        scheme: 'exact' as const,
+        network: x402Config.network,
+        payTo: walletAddress,
+        price: `$${price}`,
+      },
+      description,
+      mimeType: 'application/json',
+    });
+
+    app.use(
+      paymentMiddleware(
+        {
+          'POST /api/swap-quote': makeConfig('0.005', 'Uniswap swap quote for any token pair on Base'),
+          'POST /api/private-analyze': makeConfig('0.02', 'Private financial analysis via Venice AI'),
+          'POST /api/ask': makeConfig('0.01', 'General reasoning via Bankr LLM Gateway'),
+          'POST /api/discover': makeConfig('0.01', 'x402 service discovery — Venice-ranked search'),
+          'POST /api/arbitrage': makeConfig('0.01', 'Cross-chain arbitrage detection between Base and Celo'),
+          'POST /api/rebalance': makeConfig('0.02', 'Private portfolio rebalancer with optional auto-execution'),
+          'POST /api/generate-image': makeConfig('0.03', 'Private uncensored image generation via Venice AI (Self-verified 18+ only)'),
+          'POST /api/limit-order': makeConfig('0.01', 'Gasless limit order via UniswapX filler network'),
+          'POST /api/bridge': makeConfig('0.01', 'Cross-chain bridge quote via Across Protocol'),
+        },
+        resourceServer,
+      ),
+    );
+  }
+
+  // === Self Agent ID Verification (optional layer) ===
+  // When Self headers are present, verifies the caller is human-backed.
+  // Non-required by default — agents without Self can still use x402 payment.
+  if (process.env.SELF_ENABLED === 'true') {
+    const { selfAgentAuth } = await import('../self/middleware.js');
+    const selfNetwork = (process.env.SELF_NETWORK as 'mainnet' | 'testnet') || 'mainnet';
+    app.use('/api/*', selfAgentAuth({ network: selfNetwork, required: false }));
+  }
 
   // === Paid API Endpoints ===
 
