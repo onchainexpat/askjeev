@@ -29,6 +29,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AskJeev — Autonomous Agent Butler</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; line-height: 1.6; }
@@ -231,7 +232,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     }
     try {
       var accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      connectedAddress = accounts[0];
+      connectedAddress = ethers.getAddress(accounts[0]);
       document.getElementById('wallet-addr').textContent = connectedAddress.slice(0,6) + '...' + connectedAddress.slice(-4);
       document.getElementById('connect-btn').textContent = 'Connected';
       document.getElementById('connect-btn').style.borderColor = '#4ade80';
@@ -280,63 +281,44 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     var nonce = randomHex(32);
 
     var authorization = {
-      from: connectedAddress,
-      to: req.payTo,
+      from: ethers.getAddress(connectedAddress),
+      to: ethers.getAddress(req.payTo),
       value: req.amount,
       validAfter: (now - 600).toString(),
       validBefore: (now + req.maxTimeoutSeconds).toString(),
       nonce: nonce
     };
 
-    var domain = {
-      name: req.extra.name,
-      version: req.extra.version,
-      chainId: 8453,
-      verifyingContract: req.asset
-    };
-
-    var types = {
-      TransferWithAuthorization: [
-        { name: 'from', type: 'address' },
-        { name: 'to', type: 'address' },
-        { name: 'value', type: 'uint256' },
-        { name: 'validAfter', type: 'uint256' },
-        { name: 'validBefore', type: 'uint256' },
-        { name: 'nonce', type: 'bytes32' }
-      ]
-    };
-
-    var typedData = JSON.stringify({
-      types: { EIP712Domain: [
-        { name: 'name', type: 'string' },
-        { name: 'version', type: 'string' },
-        { name: 'chainId', type: 'uint256' },
-        { name: 'verifyingContract', type: 'address' }
-      ], TransferWithAuthorization: [
-        { name: 'from', type: 'address' },
-        { name: 'to', type: 'address' },
-        { name: 'value', type: 'uint256' },
-        { name: 'validAfter', type: 'uint256' },
-        { name: 'validBefore', type: 'uint256' },
-        { name: 'nonce', type: 'bytes32' }
-      ]},
-      primaryType: 'TransferWithAuthorization',
-      domain: domain,
-      message: {
-        from: connectedAddress,
-        to: req.payTo,
-        value: req.amount,
-        validAfter: authorization.validAfter,
-        validBefore: authorization.validBefore,
-        nonce: nonce
-      }
-    });
-
     try {
-      var signature = await window.ethereum.request({
-        method: 'eth_signTypedData_v4',
-        params: [connectedAddress, typedData]
-      });
+      var provider = new ethers.BrowserProvider(window.ethereum);
+      var signer = await provider.getSigner();
+
+      var signature = await signer.signTypedData(
+        {
+          name: req.extra.name,
+          version: req.extra.version,
+          chainId: 8453,
+          verifyingContract: ethers.getAddress(req.asset)
+        },
+        {
+          TransferWithAuthorization: [
+            { name: 'from', type: 'address' },
+            { name: 'to', type: 'address' },
+            { name: 'value', type: 'uint256' },
+            { name: 'validAfter', type: 'uint256' },
+            { name: 'validBefore', type: 'uint256' },
+            { name: 'nonce', type: 'bytes32' }
+          ]
+        },
+        {
+          from: ethers.getAddress(connectedAddress),
+          to: ethers.getAddress(req.payTo),
+          value: BigInt(req.amount),
+          validAfter: BigInt(authorization.validAfter),
+          validBefore: BigInt(authorization.validBefore),
+          nonce: nonce
+        }
+      );
 
       var paymentPayload = {
         x402Version: 2,
