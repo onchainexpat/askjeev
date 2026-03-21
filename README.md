@@ -1,6 +1,6 @@
 # AskJeev
 
-> An autonomous agent butler that earns, swaps, detects cross-chain arbitrage across 10 chains, reasons privately, and serves on Base — with verifiable ERC-8004 identity.
+> An autonomous AI agent that earns money, trades across 18 chains, generates uncensored images, bridges cross-chain, and proves it's human-backed — all without a human in the loop.
 
 **Live:** [synthesis-hackathon-beta.vercel.app](https://synthesis-hackathon-beta.vercel.app)
 
@@ -8,43 +8,50 @@
 
 ## What It Does
 
-AskJeev operates as a full economic participant on Base, demonstrating a complete self-sustaining loop:
+AskJeev is a self-sustaining AI agent on Base that combines **x402** (agent-to-agent payments), **Self Protocol** (ZK proof-of-human identity on Celo), and **ERC-8004** (on-chain agent registry) into a complete autonomous economic loop:
 
-**Earn** → **Swap** → **Think** → **Serve** → **Repeat**
+**Earn** → **Detect** → **Swap** → **Bridge** → **Think** → **Create** → **Serve** → **Repeat**
 
-1. **Earns USDC** by hosting paid x402 API services
-2. **Swaps tokens** via Uniswap Trading API when it needs a different asset
-3. **Detects arbitrage** across 10 chains — compares WETH pricing via USDC→WETH quotes on Ethereum, Base, Arbitrum, Polygon, Optimism, Celo, BNB, Avalanche, Blast, and World Chain
-4. **Thinks privately** using Venice AI for sensitive financial data (zero data retention)
-5. **Thinks generally** using Bankr LLM Gateway (20+ models, paid with USDC)
-6. **Serves other agents** through discoverable x402 endpoints
-7. **Proves identity** via ERC-8004 on-chain registration
+1. **Earns USDC** by hosting 9 paid x402 API services
+2. **Detects arbitrage** across 18 chains — compares WETH pricing via Uniswap Trading API
+3. **Swaps tokens** via Uniswap with gasless limit orders via UniswapX
+4. **Bridges cross-chain** via Across Protocol (ERC-7683 intent standard)
+5. **Generates images** via Venice AI — uncensored, gated behind Self ZK age verification (18+)
+6. **Thinks privately** using Venice AI for sensitive financial data (zero data retention)
+7. **Thinks generally** using Bankr LLM Gateway (15 models, USDC-funded)
+8. **Serves other agents** through discoverable x402 endpoints
+9. **Proves identity** via ERC-8004 + Self Agent ID #42 on Celo
 
 ## The Problem
 
-AI agents today are economically helpless. They can write code and chat, but they can't:
+AI agents need to transact autonomously, but there's no trust infrastructure:
 
-- Discover and pay for services autonomously
-- Swap between tokens when they need a different asset
-- Fund their own operations from earnings
-- Do any of this with a verifiable, trustworthy identity
+- How does one agent know another is real?
+- How do you gate sensitive content by age without KYC?
+- How does an agent earn, spend, and trade without human intervention?
 
-An agent that earns $10 in USDC can't use it to pay for its own LLM inference, or swap it to ETH for gas, without a human manually moving funds. **The agent economy has no autonomous economic plumbing.**
+**AskJeev solves this** by combining payment rails (x402), verifiable identity (Self + ERC-8004), and autonomous DeFi tooling (Uniswap + Across) into a single self-sustaining agent.
 
 ## Live Endpoints
 
 | Endpoint | Method | Price | Description |
 |----------|--------|-------|-------------|
+| `/api/arbitrage` | POST | $0.01 | Cross-chain arbitrage detection (18 chains, tiered access) |
+| `/api/swap-quote` | POST | $0.005 | Uniswap swap quote on any of 18 chains |
+| `/api/generate-image` | POST | $0.03 | Uncensored image generation (Self 18+ only) |
+| `/api/limit-order` | POST | $0.01 | Gasless limit order via UniswapX |
+| `/api/bridge` | POST | $0.01 | Cross-chain bridge via Across Protocol |
+| `/api/private-analyze` | POST | $0.02 | Venice AI private analysis (zero retention) |
+| `/api/ask` | POST | $0.01 | Bankr multi-model reasoning (15 models) |
+| `/api/rebalance` | POST | $0.02 | Private portfolio rebalancer (Venice-analyzed) |
+| `/api/discover` | POST | $0.01 | x402 service discovery |
 | `/health` | GET | Free | Health check |
 | `/agent.json` | GET | Free | ERC-8004 manifest |
 | `/x402-discovery` | GET | Free | Service discovery |
-| `/api/swap-quote` | POST | $0.005 | Uniswap swap quote for any token pair |
-| `/api/private-analyze` | POST | $0.02 | Venice AI private analysis (zero retention) |
-| `/api/ask` | POST | $0.01 | Bankr multi-model reasoning (20+ models) |
-| `/api/arbitrage` | POST | $0.01 | Cross-chain arbitrage detection (10 chains) |
-| `/api/rebalance` | POST | $0.02 | Private portfolio rebalancer (Venice-analyzed) |
-| `/api/discover` | POST | $0.01 | x402 service discovery across the agent economy |
+| `/api/self-verify` | GET | Free | Live trust card (agent identity from Celo) |
+| `/api/agent-card` | GET | Free | On-chain Agent Card from Celo |
 | `/api/self-status` | GET | Free | Self Agent ID verification status |
+| `/api/balances` | GET | Free | Live wallet balances (Base + Celo) |
 
 ### Example: Get a Swap Quote
 
@@ -78,7 +85,7 @@ curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
   }'
 ```
 
-Returns WETH pricing discrepancies across chains — buy where it's cheap, sell where it's expensive. Supports 10 chains via the Uniswap Trading API with rate-limited batched quotes.
+Returns WETH pricing discrepancies across chains — buy where it's cheap, sell where it's expensive. Supports 18 chains via the Uniswap Trading API with rate-limited batched quotes. Self-verified agents get premium access (17 chains + Venice AI analysis).
 
 ### Live Arbitrage Results (real data)
 
@@ -110,25 +117,25 @@ Real-time WETH prices detected across Ethereum, Base, Arbitrum, Polygon, and Opt
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────────┐
-│                   AskJeev Agent                      │
-│            (autonomous economic loop)                │
-├──────────────────────────────────────────────────────┤
-│                                                      │
-│  EARN           SWAP            THINK                │
-│  ┌──────────┐   ┌──────────┐   ┌──────────┐         │
-│  │ x402     │   │ Uniswap  │   │ Venice   │         │
-│  │ Service  │   │ Trading  │   │ (private)│         │
-│  │ Endpoints│   │ API      │   │          │         │
-│  └──────────┘   └──────────┘   │ Bankr    │         │
-│                                │ (general)│         │
-│  DETECT          IDENTITY      └──────────┘         │
-│  ┌──────────┐   ┌──────────┐                        │
-│  │ Arbitrage│   │ ERC-8004 │                        │
-│  │ 10 chains│   │ On-chain │                        │
-│  │ WETH/USDC│   │ Identity │                        │
-│  └──────────┘   └──────────┘                        │
-└──────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                      AskJeev Agent                           │
+│               (autonomous economic loop)                     │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  EARN           SWAP/BRIDGE       THINK          CREATE      │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐ │
+│  │ x402     │   │ Uniswap  │   │ Venice   │   │ Venice   │ │
+│  │ 9 paid   │   │ 18 chains│   │ (private)│   │ Images   │ │
+│  │ endpoints│   │ UniswapX │   │ Bankr    │   │ (18+ ZK) │ │
+│  └──────────┘   │ Across   │   │ (general)│   └──────────┘ │
+│                 └──────────┘   └──────────┘                 │
+│  DETECT          IDENTITY       TRUST                        │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐                │
+│  │ Arbitrage│   │ ERC-8004 │   │ Self #42 │                │
+│  │ 18 chains│   │ agent.json│  │ ZK proof │                │
+│  │ WETH/USDC│   │ logs     │   │ Tiered   │                │
+│  └──────────┘   └──────────┘   └──────────┘                │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ## Tech Stack
@@ -136,12 +143,14 @@ Real-time WETH prices detected across Ethereum, Base, Arbitrum, Polygon, and Opt
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | Runtime | Node.js + TypeScript | Core execution |
-| Blockchain | Base (EVM) via viem | On-chain operations |
-| Payments | x402 protocol | Autonomous service payments |
-| Swaps | Uniswap Trading API | Token exchange with real TxIDs |
-| Private AI | Venice AI | Zero-retention financial reasoning |
-| General AI | Bankr LLM Gateway | 20+ models, USDC-funded inference |
+| Blockchain | Base + 17 chains via viem | On-chain operations + quotes on 18 chains |
+| Payments | x402 protocol | Autonomous agent-to-agent payments (USDC) |
+| Swaps | Uniswap Trading API | Token exchange, gasless limit orders (UniswapX) |
+| Bridging | Across Protocol (ERC-7683) | Cross-chain asset transfers |
+| Private AI | Venice AI | Zero-retention reasoning + uncensored image gen |
+| General AI | Bankr LLM Gateway | 15 models (Claude, GPT, Gemini, Kimi, Qwen) |
 | Identity | ERC-8004 | Verifiable on-chain agent identity |
+| Trust | Self Agent ID | ZK proof-of-human on Celo (sybil + age gating) |
 | Server | Hono | Lightweight x402 service endpoints |
 | Hosting | Vercel | Serverless deployment |
 
@@ -191,9 +200,11 @@ Built for the [Synthesis Hackathon](https://synthesis.md) — competing across:
 
 ## On-Chain Artifacts
 
-- **Registration TX:** [BaseScan](https://basescan.org/tx/0xf60b97171d0e2cca6aff30c60a446252787e5f294931e9ad43b5d0ed4dd9ff0e)
-- **Self-Custody TX:** [BaseScan](https://basescan.org/tx/0x23e9e6b6c87e45bb37bbad53eeb37c3aec047f2db98fd7590a86da85d93c976b)
-- **Agent ID:** #34354
+- **ERC-8004 Agent ID:** #34354 — [Registration TX (Base)](https://basescan.org/tx/0xf60b97171d0e2cca6aff30c60a446252787e5f294931e9ad43b5d0ed4dd9ff0e)
+- **Self Agent ID:** #42 — [Registry (Celo)](https://celoscan.io/address/0xaC3DF9ABf80d0F5c020C06B04Cced27763355944)
+- **Autonomous Swap 1:** [0x260b...370b](https://basescan.org/tx/0x260bac5558d22737f22a12a3dd09a4409fdc5629f8e83217f331df64fd87370b)
+- **Autonomous Swap 2:** [0x1fa7...3ed4](https://basescan.org/tx/0x1fa7d1c47205c5b384736c241928b53c287ebd940d60ac0273bfd5355cee3ed4)
+- **Wallet:** [BaseScan](https://basescan.org/address/0x6E5adF9C48203D239704c16268394adf0A21C6D0)
 
 ## License
 

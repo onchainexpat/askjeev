@@ -7,7 +7,7 @@ AskJeev is an autonomous economic agent on Base that demonstrates a complete sel
 **Earn** → **Detect** → **Swap** → **Think** → **Serve** → **Repeat**
 
 1. **Earns USDC** by hosting paid x402 API services (swap quotes, arbitrage detection, private analysis, multi-model reasoning)
-2. **Detects cross-chain arbitrage** across 10 chains by comparing USDC→WETH rates via Uniswap Trading API (Ethereum, Base, Arbitrum, Polygon, Optimism, Celo, BNB, Avalanche, Blast, World Chain)
+2. **Detects cross-chain arbitrage** across 18 chains by comparing USDC→WETH rates via Uniswap Trading API (Ethereum, Base, Arbitrum, Polygon, Optimism, Celo, BNB, Avalanche, Blast, World Chain)
 3. **Swaps tokens** via Uniswap Trading API when it needs a different asset
 4. **Thinks privately** using Venice AI for sensitive financial data (zero data retention)
 5. **Thinks generally** using Bankr LLM Gateway (20+ models, paid with USDC)
@@ -43,6 +43,22 @@ curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
 curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
   -H "Content-Type: application/json" \
   -d '{"mode": "all"}'
+
+# Gasless limit order (pay $0.01 USDC via x402)
+curl -X POST https://synthesis-hackathon-beta.vercel.app/api/limit-order \
+  -H "Content-Type: application/json" \
+  -d '{"tokenIn": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "tokenOut": "0x4200000000000000000000000000000000000006", "amount": "1000000", "limitPrice": "0.0004", "chain": "base"}'
+
+# Cross-chain bridge quote (pay $0.01 USDC via x402)
+curl -X POST https://synthesis-hackathon-beta.vercel.app/api/bridge \
+  -H "Content-Type: application/json" \
+  -d '{"tokenIn": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "tokenOut": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831", "amount": "1000000", "chainIn": "base", "chainOut": "arbitrum"}'
+
+# Uncensored image generation (pay $0.03, requires Self Agent ID 18+)
+# Returns 403 without Self verification — ZK age-gated
+curl -X POST https://synthesis-hackathon-beta.vercel.app/api/generate-image \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "a cyberpunk cityscape at sunset"}'
 ```
 
 ### As a Judge
@@ -60,37 +76,38 @@ curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | Runtime | Node.js + TypeScript | Core execution |
-| Blockchain | Base + 9 chains via viem | On-chain operations (quotes on 10 chains, txns on Base/Celo) |
-| Payments | x402 protocol (x402-wallet-mcp) | Autonomous service payments |
-| Swaps | Uniswap Trading API | Token exchange with real TxIDs |
-| Private AI | Venice AI | Zero-retention financial reasoning |
-| General AI | Bankr LLM Gateway | 20+ models, USDC-funded inference |
+| Blockchain | Base + 17 chains via viem | On-chain operations (quotes on 18 chains, txns on Base/Celo) |
+| Payments | x402 protocol | Autonomous agent-to-agent payments (USDC) |
+| Swaps | Uniswap Trading API | Token exchange, gasless limit orders (UniswapX) |
+| Bridging | Across Protocol (ERC-7683) | Cross-chain asset transfers |
+| Private AI | Venice AI | Zero-retention reasoning + uncensored image gen |
+| General AI | Bankr LLM Gateway | 15 models (Claude, GPT, Gemini, Kimi, Qwen) |
 | Identity | ERC-8004 | Verifiable on-chain agent identity |
-| Trust | Self Agent ID | ZK proof-of-human verification (Celo) |
+| Trust | Self Agent ID | ZK proof-of-human on Celo (sybil + age gating) |
 | Server | Hono | x402 service endpoints |
 
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────────┐
-│                   AskJeev Agent                      │
-│            (autonomous economic loop)                │
-├──────────────────────────────────────────────────────┤
-│                                                      │
-│  EARN           SWAP            THINK                │
-│  ┌──────────┐   ┌──────────┐   ┌──────────┐         │
-│  │ x402     │   │ Uniswap  │   │ Venice   │         │
-│  │ Service  │   │ Trading  │   │ (private)│         │
-│  │ Endpoints│   │ API      │   │          │         │
-│  └──────────┘   └──────────┘   │ Bankr    │         │
-│                                │ (general)│         │
-│  DETECT          IDENTITY       TRUST               │
-│  ┌──────────┐   ┌──────────┐   ┌──────────┐        │
-│  │ Arbitrage│   │ ERC-8004 │   │ Self #42 │        │
-│  │ 10 chains│   │ agent.json│  │ ZK proof │        │
-│  │ WETH/USDC│   │ logs     │   │ Tiered   │        │
-│  └──────────┘   └──────────┘   └──────────┘        │
-└──────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                      AskJeev Agent                           │
+│               (autonomous economic loop)                     │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  EARN           SWAP/BRIDGE       THINK          CREATE      │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐ │
+│  │ x402     │   │ Uniswap  │   │ Venice   │   │ Venice   │ │
+│  │ 9 paid   │   │ 18 chains│   │ (private)│   │ Images   │ │
+│  │ endpoints│   │ UniswapX │   │ Bankr    │   │ (18+ ZK) │ │
+│  └──────────┘   │ Across   │   │ (general)│   └──────────┘ │
+│                 └──────────┘   └──────────┘                 │
+│  DETECT          IDENTITY       TRUST                        │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐                │
+│  │ Arbitrage│   │ ERC-8004 │   │ Self #42 │                │
+│  │ 18 chains│   │ agent.json│  │ ZK proof │                │
+│  │ WETH/USDC│   │ logs     │   │ Tiered   │                │
+│  └──────────┘   └──────────┘   └──────────┘                │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ## Self-Sustaining Economics
@@ -119,7 +136,7 @@ Self-verified agents get **premium access** — a real economic incentive for id
 
 | Feature | Standard (no Self) | Premium (Self verified) |
 |---------|-------------------|------------------------|
-| Chains scanned | 5 | All 10 |
+| Chains scanned | 5 | All 17 |
 | Venice AI analysis | No | Yes |
 | Min spread threshold | 0.1% | 0.01% |
 
