@@ -351,15 +351,13 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
       var paymentPayload = {
         x402Version: 2,
-        scheme: 'exact',
-        network: req.network,
         payload: {
           authorization: authorization,
           signature: signature
         }
       };
 
-      var paymentHeader = btoa(JSON.stringify(paymentPayload));
+      var paymentHeader = btoa(unescape(encodeURIComponent(JSON.stringify(paymentPayload))));
 
       st.textContent = 'Payment signed! Calling ' + path + '...';
       st.style.color = '#4ade80';
