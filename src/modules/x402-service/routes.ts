@@ -514,7 +514,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v2.7.0</span>
+    <span style="float:right;">v2.8.0</span>
   </div>
 </div>
 </body>
@@ -855,10 +855,22 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   // Transform v1 payload to v2 with the correct accepted requirements.
   app.use('/api/*', async (c, next) => {
     const xPayment = c.req.header('x-payment') || c.req.header('X-PAYMENT');
-    if (xPayment && !c.req.header('payment-signature')) {
+    const existingPaySig = c.req.header('payment-signature');
+
+    // Log ALL payment-related headers for debugging
+    if (xPayment || existingPaySig) {
+      console.log('[x402-bridge] Headers received:', {
+        'x-payment': xPayment ? xPayment.slice(0, 50) + '...' : null,
+        'payment-signature': existingPaySig ? existingPaySig.slice(0, 50) + '...' : null,
+        path: c.req.path,
+      });
+    }
+
+    if (xPayment && !existingPaySig) {
       try {
         const raw = typeof atob !== 'undefined' ? atob(xPayment) : Buffer.from(xPayment, 'base64').toString();
         const decoded = JSON.parse(raw);
+        console.log('[x402-bridge] Decoded v1 payload:', { x402Version: decoded.x402Version, scheme: decoded.scheme, network: decoded.network, hasPayload: !!decoded.payload, hasAccepted: !!decoded.accepted });
 
         // Build v2 payload with accepted requirements
         const walletAddress = getAccount().address;
@@ -883,7 +895,9 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
           ? btoa(JSON.stringify(v2Payload))
           : Buffer.from(JSON.stringify(v2Payload)).toString('base64');
         c.req.raw.headers.set('payment-signature', encoded);
+        console.log('[x402-bridge] Transformed to v2, set payment-signature header');
       } catch (e) {
+        console.error('[x402-bridge] Transform failed:', e);
         c.req.raw.headers.set('payment-signature', xPayment);
       }
     }
