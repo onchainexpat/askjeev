@@ -603,7 +603,10 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       const httpClient = new x402HTTPClient(client);
       const x402Fetch = wrapFetchWithPayment(fetch, httpClient);
 
-      const targetUrl = (deployedUrl || `http://localhost:${process.env.PORT || 3402}`) + endpoint;
+      // Use the canonical deployed URL, falling back to Vercel auto-URL
+      const baseUrl = deployedUrl
+        || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `http://localhost:${process.env.PORT || 3402}`);
+      const targetUrl = baseUrl + endpoint;
 
       const res = await x402Fetch(targetUrl, {
         method: 'POST',
@@ -611,9 +614,11 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
         body: JSON.stringify(reqBody || {}),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch { data = { raw: text.slice(0, 200) }; }
 
-      await log('demo_pay', 'api/demo/pay', { endpoint, paidFrom: account.address }, { status: res.status });
+      await log('demo_pay', 'api/demo/pay', { endpoint, paidFrom: account.address, targetUrl }, { status: res.status });
 
       return c.json({
         paidBy: 'AskJeev agent wallet (self-sustaining)',
