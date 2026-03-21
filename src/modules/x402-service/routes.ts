@@ -461,34 +461,44 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="info-box">
     <p>AskJeev's paid endpoints work with any x402-compatible agent. The easiest way is <a href="https://www.npmjs.com/package/x402-wallet-mcp">x402-wallet-mcp</a> — a self-custodial USDC wallet + x402 payment signing as an MCP server for AI agents.</p>
 
-    <p style="margin-top:10px;"><strong>Step 1:</strong> Install the MCP server</p>
-    <pre>npx x402-wallet-mcp</pre>
+    <p style="margin-top:10px;"><strong>Claude Code (one command):</strong></p>
+    <pre>claude mcp add x402-wallet -- npx x402-wallet-mcp</pre>
 
-    <p style="margin-top:10px;"><strong>Step 2:</strong> Add to your Claude Code config (<code>~/.claude/claude_desktop_config.json</code>)</p>
+    <p style="margin-top:10px;"><strong>Cursor / Windsurf / Claude Desktop:</strong> Add to your MCP config:</p>
     <pre>{
   "mcpServers": {
     "x402-wallet": {
       "command": "npx",
-      "args": ["-y", "x402-wallet-mcp"],
+      "args": ["x402-wallet-mcp"]
+    }
+  }
+}</pre>
+    <p style="margin-top:6px;font-size:0.85em;">No API keys or signup required. On first run, a <a href="https://www.privy.io/">Privy</a> HSM-backed wallet is automatically provisioned. Fund it via the <code>fund_wallet</code> tool (Coinbase Onramp — debit card or Apple Pay) or send USDC on Base directly. Link to email with <code>wallet_link</code> for recovery on any device.</p>
+
+    <p style="margin-top:10px;"><strong>Whitelist AskJeev endpoints:</strong></p>
+    <pre>{
+  "mcpServers": {
+    "x402-wallet": {
+      "command": "npx",
+      "args": ["x402-wallet-mcp"],
       "env": {
-        "PRIVATE_KEY": "0xYOUR_PRIVATE_KEY",
         "X402_WHITELIST": "synthesis-hackathon-beta.vercel.app"
       }
     }
   }
 }</pre>
 
-    <p style="margin-top:10px;"><strong>Step 3:</strong> Ask Claude to call AskJeev endpoints</p>
-    <pre>"Use x402 to call https://synthesis-hackathon-beta.vercel.app/api/arbitrage
- with mode cross-chain and chains ethereum, base, linea"
+    <p style="margin-top:10px;"><strong>Then just ask Claude:</strong></p>
+    <pre>"Scan for cross-chain arbitrage on ethereum, base, and linea
+ using https://synthesis-hackathon-beta.vercel.app/api/arbitrage"
 
-"Use x402 to call https://synthesis-hackathon-beta.vercel.app/api/ask
- with prompt 'explain cross-chain arbitrage'"
+"Ask the Bankr LLM what cross-chain arbitrage is via
+ https://synthesis-hackathon-beta.vercel.app/api/ask"
 
-"Use x402 to bridge 1 USDC from base to arbitrum via
+"Bridge 1 USDC from base to arbitrum via
  https://synthesis-hackathon-beta.vercel.app/api/bridge"</pre>
 
-    <p style="margin-top:10px;">The MCP server handles wallet management, x402 payment signing, and automatic 402 retry — your AI agent pays autonomously in USDC on Base.</p>
+    <p style="margin-top:10px;">The MCP server handles wallet provisioning (Privy HSM — keys never on disk), x402 payment signing (EIP-3009), spending controls, and automatic 402 retry. Your AI agent pays autonomously in USDC on Base.</p>
   </div>
 
   <h2>On-Chain Proof</h2>
@@ -512,7 +522,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v2.1.0</span>
+    <span style="float:right;">v2.2.0</span>
   </div>
 </div>
 </body>
