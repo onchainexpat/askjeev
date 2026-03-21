@@ -184,17 +184,34 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   </script>
 
   <h2>Live Demo</h2>
-  <p style="color:#888;font-size:0.9em;margin-bottom:16px;">Click to call real endpoints. Free endpoints return live data. Paid endpoints show the x402 payment wall ($0.005–$0.03 USDC on Base).</p>
+  <div id="wallet-section" style="background:#111;border:1px solid #222;border-radius:10px;padding:16px;margin:0 0 16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div>
+        <span style="color:#888;font-size:0.9em;">Wallet:</span>
+        <span id="wallet-addr" style="color:#fff;font-family:monospace;font-size:0.85em;">Not connected</span>
+        <span id="wallet-bal" style="color:#4ade80;font-size:0.85em;margin-left:8px;"></span>
+      </div>
+      <button id="connect-btn" onclick="connectWallet()" style="background:#1a1a2e;border:1px solid #60a5fa;color:#60a5fa;padding:6px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Connect Wallet</button>
+    </div>
+  </div>
+
+  <p style="color:#888;font-size:0.9em;margin-bottom:12px;">Free demo endpoints return live data. Paid endpoints show the x402 payment wall ($0.005–$0.03 USDC on Base).</p>
 
   <div style="display:grid;gap:10px;margin:12px 0;">
+    <p style="color:#aaa;font-size:0.8em;margin:0;">Free — live results:</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="demoCall('/api/self-verify','GET')" style="background:#0d2818;border:1px solid #1a5c2e;color:#4ade80;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Agent Trust Card (free)</button>
-      <button onclick="demoCall('/api/arbitrage','POST',{mode:'cross-chain',chains:['ethereum','base','unichain','zksync','linea'],minSpreadPercent:0})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">18-Chain Arbitrage ($0.01)</button>
+      <button onclick="demoCall('/api/self-verify','GET')" style="background:#0d2818;border:1px solid #1a5c2e;color:#4ade80;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Agent Trust Card</button>
+      <button onclick="demoCall('/api/demo/arbitrage','GET')" style="background:#0d2818;border:1px solid #1a5c2e;color:#4ade80;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">18-Chain Arbitrage (live)</button>
+      <button onclick="demoCall('/api/demo/balances','GET')" style="background:#0d2818;border:1px solid #1a5c2e;color:#4ade80;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Agent Wallet Balance</button>
+      <button onclick="demoCall('/health','GET')" style="background:#0d2818;border:1px solid #1a5c2e;color:#4ade80;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Health Check</button>
+    </div>
+    <p style="color:#aaa;font-size:0.8em;margin:8px 0 0;">Paid — x402 payment required (USDC on Base):</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="demoCall('/api/arbitrage','POST',{mode:'cross-chain',chains:['ethereum','base','unichain','zksync','linea'],minSpreadPercent:0})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Full Arbitrage ($0.01)</button>
       <button onclick="demoCall('/api/generate-image','POST',{prompt:'a cyberpunk robot butler',model:'chroma',width:512,height:512})" style="background:#2a1a0a;border:1px solid #5c3a1a;color:#f59e0b;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Image Gen — Self 18+ ($0.03)</button>
       <button onclick="demoCall('/api/limit-order','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0x4200000000000000000000000000000000000006',amount:'1000000',limitPrice:'0.0004',chain:'base'})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Limit Order ($0.01)</button>
-      <button onclick="demoCall('/api/bridge','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831',amount:'1000000',chainIn:'base',chainOut:'arbitrum'})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Bridge Base→Arb ($0.01)</button>
-      <button onclick="demoCall('/api/ask','POST',{prompt:'What is cross-chain arbitrage?'})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Ask (Bankr LLM) ($0.01)</button>
-      <button onclick="demoCall('/health','GET')" style="background:#1a1a2e;border:1px solid #333;color:#888;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Health (free)</button>
+      <button onclick="demoCall('/api/bridge','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831',amount:'1000000',chainIn:'base',chainOut:'arbitrum'})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Bridge ($0.01)</button>
+      <button onclick="demoCall('/api/ask','POST',{prompt:'What is cross-chain arbitrage?'})" style="background:#1a1a2e;border:1px solid #333;color:#60a5fa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85em;">Ask Bankr ($0.01)</button>
     </div>
   </div>
   <div id="demo-result" style="display:none;background:#0a0a0a;border:1px solid #222;border-radius:8px;padding:16px;margin:12px 0;max-height:400px;overflow-y:auto;">
@@ -205,6 +222,43 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     <pre id="demo-json" style="margin:0;white-space:pre-wrap;word-break:break-all;font-size:0.8em;line-height:1.5;max-height:340px;overflow-y:auto;"></pre>
   </div>
   <script>
+  var connectedAddress = null;
+
+  async function connectWallet() {
+    if (!window.ethereum) {
+      document.getElementById('wallet-addr').textContent = 'No wallet detected (install MetaMask)';
+      return;
+    }
+    try {
+      var accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      connectedAddress = accounts[0];
+      document.getElementById('wallet-addr').textContent = connectedAddress.slice(0,6) + '...' + connectedAddress.slice(-4);
+      document.getElementById('connect-btn').textContent = 'Connected';
+      document.getElementById('connect-btn').style.borderColor = '#4ade80';
+      document.getElementById('connect-btn').style.color = '#4ade80';
+
+      // Switch to Base (chainId 8453)
+      try {
+        await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x2105' }] });
+      } catch(e) {}
+
+      // Get USDC balance on Base
+      try {
+        var usdcContract = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+        var balData = await window.ethereum.request({
+          method: 'eth_call',
+          params: [{ to: usdcContract, data: '0x70a08231000000000000000000000000' + connectedAddress.slice(2) }, 'latest']
+        });
+        var bal = parseInt(balData, 16) / 1e6;
+        document.getElementById('wallet-bal').textContent = bal.toFixed(2) + ' USDC (Base)';
+      } catch(e) {
+        document.getElementById('wallet-bal').textContent = '';
+      }
+    } catch(e) {
+      document.getElementById('wallet-addr').textContent = 'Connection rejected';
+    }
+  }
+
   function demoCall(path, method, body) {
     var el = document.getElementById('demo-result');
     var st = document.getElementById('demo-status');
@@ -228,16 +282,14 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       st.textContent = method + ' ' + path + ' — ' + r.status + ' (' + ms + 'ms)';
 
       if (r.status === 402) {
-        var price = r.headers.get('x-402-price') || 'see headers';
-        var payTo = r.headers.get('x-402-pay-to') || '';
         js.textContent = JSON.stringify({
           status: '402 Payment Required',
           protocol: 'x402 — agent-to-agent payments',
           message: 'This endpoint requires USDC payment on Base via x402 protocol.',
-          price: price,
-          payTo: payTo || '0x6E5adF9C48203D239704c16268394adf0A21C6D0',
+          payTo: '0x6E5adF9C48203D239704c16268394adf0A21C6D0',
           network: 'eip155:8453 (Base)',
-          howToPay: 'Send x402 payment header with USDC on Base. See /x402-discovery for details.'
+          howToPay: 'Agents pay automatically via @x402/fetch. Connect a wallet with USDC on Base to interact.',
+          discovery: window.location.origin + '/x402-discovery'
         }, null, 2);
         return;
       }
@@ -450,6 +502,40 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   app.get('/x402-discovery', x402Discovery);
 
   // === Free API Endpoints (registered BEFORE x402 payment middleware) ===
+
+  // Free demo endpoints — let judges try key features without x402 payment
+  app.get('/api/demo/arbitrage', async (c) => {
+    try {
+      const result = await detectArbitrage({
+        mode: 'cross-chain',
+        chains: ['ethereum', 'base', 'unichain', 'zksync', 'linea'],
+        minSpreadPercent: 0,
+        includeAnalysis: false,
+      });
+      return c.json({ demo: true, ...result });
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
+  app.get('/api/demo/balances', async (c) => {
+    try {
+      const account = getAccount();
+      const { getTokenBalance } = await import('../uniswap/client.js');
+      const { TOKENS: T } = await import('../../config.js');
+
+      const baseUsdc = await getTokenBalance(T.base.USDC, account.address, 'base');
+      const baseEth = await getTokenBalance('0x0000000000000000000000000000000000000000', account.address, 'base');
+
+      return c.json({
+        demo: true,
+        wallet: account.address,
+        base: { USDC: baseUsdc, ETH: baseEth },
+      });
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
 
   // Self verification status endpoint
   app.get('/api/self-status', (c) => {

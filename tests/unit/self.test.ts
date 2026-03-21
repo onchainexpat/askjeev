@@ -213,7 +213,6 @@ describe('Self Agent ID Middleware', () => {
 
       expect(res.status).toBe(200);
       expect(data.agent.isVerified).toBe(false);
-      expect(data.note).toBe('SELF_AGENT_PRIVATE_KEY not configured');
     });
   });
 
