@@ -514,7 +514,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v2.8.0</span>
+    <span style="float:right;">v2.9.0</span>
   </div>
 </div>
 </body>
@@ -875,8 +875,8 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
         // Build v2 payload with accepted requirements
         const walletAddress = getAccount().address;
         const accepted = {
-          scheme: decoded.scheme || 'exact',
-          network: decoded.network || 'eip155:8453',
+          scheme: 'exact',
+          network: 'eip155:8453',
           amount: decoded.payload?.authorization?.value || '10000',
           asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
           payTo: walletAddress,
