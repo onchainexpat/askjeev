@@ -61,6 +61,13 @@ export function selfAgentAuth(options: {
 
     try {
       const url = new URL(c.req.url);
+      // Derive agentKey from address header if not explicitly provided
+      const agentKeyHeader = c.req.header('x-self-agent-key');
+      const agentAddress = c.req.header('x-self-agent-address');
+      const agentKey = agentKeyHeader || (agentAddress
+        ? ('0x' + '0'.repeat(24) + agentAddress.replace('0x', '').toLowerCase())
+        : undefined);
+
       const result = await verifier.verify({
         signature,
         timestamp,
@@ -68,7 +75,7 @@ export function selfAgentAuth(options: {
         url: url.pathname + url.search,
         body: rawBody || undefined,
         keytype: c.req.header('x-self-agent-keytype'),
-        agentKey: c.req.header('x-self-agent-key'),
+        agentKey,
       });
 
       if (!result.valid) {
