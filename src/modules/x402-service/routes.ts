@@ -475,18 +475,10 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 }</pre>
     <p style="margin-top:6px;font-size:0.85em;">No API keys or signup required. On first run, a <a href="https://www.privy.io/">Privy</a> HSM-backed wallet is automatically provisioned. Fund it via the <code>fund_wallet</code> tool (Coinbase Onramp — debit card or Apple Pay) or send USDC on Base directly. Link to email with <code>wallet_link</code> for recovery on any device.</p>
 
-    <p style="margin-top:10px;"><strong>Whitelist AskJeev endpoints:</strong></p>
-    <pre>{
-  "mcpServers": {
-    "x402-wallet": {
-      "command": "npx",
-      "args": ["x402-wallet-mcp"],
-      "env": {
-        "X402_WHITELIST": "synthesis-hackathon-beta.vercel.app"
-      }
-    }
-  }
-}</pre>
+    <p style="margin-top:10px;"><strong>Whitelist AskJeev (just ask Claude):</strong></p>
+    <pre>"Add synthesis-hackathon-beta.vercel.app to my x402 allowlist"</pre>
+    <p style="margin-top:4px;font-size:0.85em;">Claude will probe our x402 discovery endpoint, find the merchant wallet address, and add it automatically. Or set it in config:</p>
+    <pre>"X402_WHITELIST": "synthesis-hackathon-beta.vercel.app"</pre>
 
     <p style="margin-top:10px;"><strong>Then just ask Claude:</strong></p>
     <pre>"Scan for cross-chain arbitrage on ethereum, base, and linea
@@ -522,7 +514,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v2.2.0</span>
+    <span style="float:right;">v2.3.0</span>
   </div>
 </div>
 </body>
