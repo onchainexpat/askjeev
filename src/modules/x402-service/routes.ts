@@ -223,13 +223,28 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     var start = Date.now();
     fetch(path, opts).then(function(r) {
       var ms = Date.now() - start;
-      var color = r.status === 200 ? '#4ade80' : r.status === 402 ? '#f59e0b' : '#ef4444';
+      var color = r.status === 200 ? '#4ade80' : r.status === 402 ? '#f59e0b' : r.status === 403 ? '#ef4444' : '#ef4444';
       st.style.color = color;
       st.textContent = method + ' ' + path + ' — ' + r.status + ' (' + ms + 'ms)';
+
+      if (r.status === 402) {
+        var price = r.headers.get('x-402-price') || 'see headers';
+        var payTo = r.headers.get('x-402-pay-to') || '';
+        js.textContent = JSON.stringify({
+          status: '402 Payment Required',
+          protocol: 'x402 — agent-to-agent payments',
+          message: 'This endpoint requires USDC payment on Base via x402 protocol.',
+          price: price,
+          payTo: payTo || '0x6E5adF9C48203D239704c16268394adf0A21C6D0',
+          network: 'eip155:8453 (Base)',
+          howToPay: 'Send x402 payment header with USDC on Base. See /x402-discovery for details.'
+        }, null, 2);
+        return;
+      }
+
       return r.text().then(function(text) {
         try {
           var parsed = JSON.parse(text);
-          // Truncate base64 image data for display
           if (parsed.images && parsed.images[0] && parsed.images[0].length > 200) {
             parsed.images = ['[base64 image data — ' + parsed.images[0].length + ' chars]'];
           }
