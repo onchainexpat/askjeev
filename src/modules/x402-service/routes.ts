@@ -291,10 +291,21 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       st.textContent = 'POST ' + path + ' — ' + r.status + ' (' + ms + 'ms) [x402 PAID by agent]';
 
       var data = await r.json();
+      // Render generated images inline
       if (data.result && data.result.images && data.result.images[0] && data.result.images[0].length > 200) {
-        data.result.images = ['[base64 image data — ' + data.result.images[0].length + ' chars]'];
+        var imgData = data.result.images[0];
+        var displayData = Object.assign({}, data);
+        displayData.result = Object.assign({}, data.result);
+        displayData.result.images = ['[rendered below]'];
+        js.textContent = JSON.stringify(displayData, null, 2);
+        var imgEl = document.createElement('img');
+        imgEl.src = 'data:image/webp;base64,' + imgData;
+        imgEl.style.cssText = 'max-width:100%;border-radius:8px;margin-top:12px;border:1px solid #333;';
+        document.getElementById('demo-pay-btn').innerHTML = '';
+        document.getElementById('demo-pay-btn').appendChild(imgEl);
+      } else {
+        js.textContent = JSON.stringify(data, null, 2);
       }
-      js.textContent = JSON.stringify(data, null, 2);
     } catch(e) {
       st.style.color = '#ef4444';
       st.textContent = 'Error: ' + (e.message || 'Request failed');
@@ -445,7 +456,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v1.5.0</span>
+    <span style="float:right;">v1.6.0</span>
   </div>
 </div>
 </body>
@@ -630,7 +641,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
           selfVerified: true,
           agentId: 42,
           result: {
-            images: result.images.map(img => img.length > 200 ? `[base64 image — ${img.length} chars]` : img),
+            images: result.images,
             model: result.model,
             privacy: 'venice-zero-retention',
             note: 'Agent #42 is Self-verified (18+ via ZK passport proof). Image generated via Venice Chroma with safe_mode: false.',
