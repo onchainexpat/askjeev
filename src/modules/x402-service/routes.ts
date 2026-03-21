@@ -508,7 +508,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     try {
       const result = await detectArbitrage({
         mode: 'cross-chain',
-        chains: ['ethereum', 'base', 'unichain', 'zksync', 'linea'],
+        chains: ['ethereum', 'base', 'linea'],
         minSpreadPercent: 0,
         includeAnalysis: false,
       });
