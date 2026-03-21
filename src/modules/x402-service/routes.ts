@@ -514,7 +514,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v2.5.0</span>
+    <span style="float:right;">v2.6.0</span>
   </div>
 </div>
 </body>
@@ -849,25 +849,39 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   });
 
   // Bridge x402 v1 → v2: x402-wallet-mcp sends X-PAYMENT with v1 payload,
-  // but @x402/core only checks payment-signature and expects v2 format.
-  // Transform v1 payload to v2 so both client versions work.
+  // but @x402/core expects v2 format with 'accepted' field for matching.
+  // Transform v1 payload to v2 with the correct accepted requirements.
   app.use('/api/*', async (c, next) => {
     const xPayment = c.req.header('x-payment') || c.req.header('X-PAYMENT');
     if (xPayment && !c.req.header('payment-signature')) {
       try {
-        const decoded = JSON.parse(atob(xPayment));
-        if (decoded.x402Version === 1 && decoded.payload) {
-          // Transform v1 → v2: strip top-level scheme/network, set version to 2
-          const v2Payload = {
-            x402Version: 2,
-            payload: decoded.payload,
-          };
-          const encoded = btoa(JSON.stringify(v2Payload));
-          c.req.raw.headers.set('payment-signature', encoded);
-        } else {
-          c.req.raw.headers.set('payment-signature', xPayment);
-        }
-      } catch {
+        const raw = typeof atob !== 'undefined' ? atob(xPayment) : Buffer.from(xPayment, 'base64').toString();
+        const decoded = JSON.parse(raw);
+
+        // Build v2 payload with accepted requirements
+        const walletAddress = getAccount().address;
+        const accepted = {
+          scheme: decoded.scheme || 'exact',
+          network: decoded.network || 'eip155:8453',
+          amount: decoded.payload?.authorization?.value || '10000',
+          asset: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+          payTo: walletAddress,
+          maxTimeoutSeconds: 300,
+          extra: { name: 'USD Coin', version: '2' },
+        };
+
+        const v2Payload = {
+          x402Version: 2,
+          payload: decoded.payload,
+          accepted,
+          resource: { url: c.req.url, description: '', mimeType: 'application/json' },
+        };
+
+        const encoded = typeof btoa !== 'undefined'
+          ? btoa(JSON.stringify(v2Payload))
+          : Buffer.from(JSON.stringify(v2Payload)).toString('base64');
+        c.req.raw.headers.set('payment-signature', encoded);
+      } catch (e) {
         c.req.raw.headers.set('payment-signature', xPayment);
       }
     }
