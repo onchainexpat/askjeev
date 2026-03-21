@@ -457,6 +457,40 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   -H "Content-Type: application/json" \\
   -d '{"mode": "cross-chain", "chains": ["ethereum", "base", "arbitrum"], "minSpreadPercent": 0.1}'</pre>
 
+  <h2>Use with Claude Code / Claude Desktop</h2>
+  <div class="info-box">
+    <p>AskJeev's paid endpoints work with any x402-compatible agent. The easiest way is <a href="https://www.npmjs.com/package/x402-wallet-mcp">x402-wallet-mcp</a> — a self-custodial USDC wallet + x402 payment signing as an MCP server for AI agents.</p>
+
+    <p style="margin-top:10px;"><strong>Step 1:</strong> Install the MCP server</p>
+    <pre>npx x402-wallet-mcp</pre>
+
+    <p style="margin-top:10px;"><strong>Step 2:</strong> Add to your Claude Code config (<code>~/.claude/claude_desktop_config.json</code>)</p>
+    <pre>{
+  "mcpServers": {
+    "x402-wallet": {
+      "command": "npx",
+      "args": ["-y", "x402-wallet-mcp"],
+      "env": {
+        "PRIVATE_KEY": "0xYOUR_PRIVATE_KEY",
+        "X402_WHITELIST": "synthesis-hackathon-beta.vercel.app"
+      }
+    }
+  }
+}</pre>
+
+    <p style="margin-top:10px;"><strong>Step 3:</strong> Ask Claude to call AskJeev endpoints</p>
+    <pre>"Use x402 to call https://synthesis-hackathon-beta.vercel.app/api/arbitrage
+ with mode cross-chain and chains ethereum, base, linea"
+
+"Use x402 to call https://synthesis-hackathon-beta.vercel.app/api/ask
+ with prompt 'explain cross-chain arbitrage'"
+
+"Use x402 to bridge 1 USDC from base to arbitrum via
+ https://synthesis-hackathon-beta.vercel.app/api/bridge"</pre>
+
+    <p style="margin-top:10px;">The MCP server handles wallet management, x402 payment signing, and automatic 402 retry — your AI agent pays autonomously in USDC on Base.</p>
+  </div>
+
   <h2>On-Chain Proof</h2>
   <div class="proof">
     <p style="color:#aaa;font-size:0.9em;margin-bottom:8px;">Every action is verifiable on-chain — registration, swaps, and identity.</p>
@@ -478,7 +512,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v2.0.0</span>
+    <span style="float:right;">v2.1.0</span>
   </div>
 </div>
 </body>
