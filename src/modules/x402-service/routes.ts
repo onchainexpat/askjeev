@@ -514,7 +514,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v2.3.0</span>
+    <span style="float:right;">v2.4.0</span>
   </div>
 </div>
 </body>
@@ -846,6 +846,17 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     } catch (err: any) {
       return c.json({ error: err.message, card: null }, 500);
     }
+  });
+
+  // Bridge x402 v1 → v2 header: x402-wallet-mcp sends X-PAYMENT (v1),
+  // but @x402/core extractPayment only checks payment-signature (v2).
+  // Copy the header so both formats are accepted.
+  app.use('/api/*', async (c, next) => {
+    const xPayment = c.req.header('x-payment') || c.req.header('X-PAYMENT');
+    if (xPayment && !c.req.header('payment-signature')) {
+      c.req.raw.headers.set('payment-signature', xPayment);
+    }
+    await next();
   });
 
   // === x402 Payment Middleware ===
