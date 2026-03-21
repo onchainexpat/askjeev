@@ -306,24 +306,6 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       ]
     };
 
-    var message = {
-      from: connectedAddress,
-      to: req.payTo,
-      value: req.amount,
-      validAfter: authorization.validAfter,
-      validBefore: authorization.validBefore,
-      nonce: nonce
-    };
-
-    var msgForSigning = {
-      from: connectedAddress,
-      to: req.payTo,
-      value: req.amount,
-      validAfter: parseInt(authorization.validAfter),
-      validBefore: parseInt(authorization.validBefore),
-      nonce: nonce
-    };
-
     var typedData = JSON.stringify({
       types: { EIP712Domain: [
         { name: 'name', type: 'string' },
@@ -340,7 +322,14 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       ]},
       primaryType: 'TransferWithAuthorization',
       domain: domain,
-      message: msgForSigning
+      message: {
+        from: connectedAddress,
+        to: req.payTo,
+        value: req.amount,
+        validAfter: authorization.validAfter,
+        validBefore: authorization.validBefore,
+        nonce: nonce
+      }
     });
 
     try {
@@ -361,6 +350,10 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
       st.textContent = 'Payment signed! Calling ' + path + '...';
       st.style.color = '#4ade80';
+
+      // Debug: log what we're sending
+      console.log('x402 payment payload:', JSON.stringify(paymentPayload, null, 2));
+      console.log('x402 header:', paymentHeader.slice(0, 100) + '...');
 
       var opts = { method: method, headers: { 'PAYMENT-SIGNATURE': paymentHeader } };
       if (body) {
