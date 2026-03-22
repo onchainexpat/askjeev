@@ -85,6 +85,10 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   .demo-btn-paid:hover { background: linear-gradient(180deg, #2B5C8A, #1B3A5C); }
   .demo-btn-gold { background: linear-gradient(180deg, #D4A535, #C4A335); border: 2px outset #E8C84A; color: #1B3A5C; padding: 6px 14px; cursor: pointer; font-size: 0.8em; font-family: Verdana, sans-serif; font-weight: bold; }
   .demo-btn-gold:hover { background: linear-gradient(180deg, #C4A335, #A08025); }
+  .self-glow { box-shadow: 0 0 8px 2px #C4A335, 0 0 16px 4px rgba(196,163,53,0.3); animation: selfPulse 2s ease-in-out infinite; }
+  @keyframes selfPulse { 0%,100% { box-shadow: 0 0 8px 2px #C4A335, 0 0 16px 4px rgba(196,163,53,0.3); } 50% { box-shadow: 0 0 12px 4px #E8C84A, 0 0 24px 8px rgba(196,163,53,0.5); } }
+  .demo-btn-self-verified { background: linear-gradient(180deg, #3A8C4A, #2B7A3A); border: 2px outset #4CAF50; color: #fff; padding: 6px 14px; cursor: pointer; font-size: 0.8em; font-family: Verdana, sans-serif; font-weight: bold; }
+  .demo-btn-self-free { background: linear-gradient(180deg, #D4A535, #C4A335); border: 2px outset #E8C84A; color: #1B3A5C; padding: 6px 14px; cursor: pointer; font-size: 0.8em; font-family: Verdana, sans-serif; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -227,13 +231,30 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       <button onclick="demoCall('/api/demo/balances','GET')" class="demo-btn-free">Agent Wallet Balance</button>
       <button onclick="demoCall('/health','GET')" class="demo-btn-free">Health Check</button>
     </div>
+    <div id="self-verify-section" style="background:#FDFAF3;border:2px solid #C4A335;padding:10px;margin:10px 0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div>
+          <span style="color:#1B3A5C;font-size:0.85em;font-family:Verdana,sans-serif;font-weight:bold;" id="self-verify-label">Self Identity: Not verified</span>
+          <span style="color:#888;font-size:0.8em;font-family:Verdana,sans-serif;"> — verify to unlock free inference + image gen</span>
+        </div>
+        <button id="self-verify-btn" onclick="startSelfVerify()" title="Scan QR with Self app to prove you are 18+ via ZK passport proof." class="demo-btn-gold">Verify Age (Self QR)</button>
+      </div>
+    </div>
+
     <p style="color:#1B3A5C;font-size:0.8em;margin:10px 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Paid — x402 payment required (USDC on Base):</p>
     <div style="display:flex;gap:6px;flex-wrap:wrap;">
       <button onclick="demoCall('/api/arbitrage','POST',{mode:'cross-chain',chains:['ethereum','base','unichain','zksync','linea'],minSpreadPercent:0})" title="Full 5-chain WETH arbitrage scan with Venice AI analysis." class="demo-btn-paid">Full Arbitrage ($0.01)</button>
-      <button onclick="demoCall('/api/generate-image','POST',{prompt:'a cyberpunk robot butler serving cocktails in a neon Tokyo alley',model:'chroma',width:512,height:512})" title="Uncensored AI image generation. Requires Self Agent ID (18+ ZK passport proof)." class="demo-btn-gold">Image Gen — Self 18+ ($0.03)</button>
-      <button onclick="startSelfVerify()" title="Scan QR with Self app to prove you are 18+ via ZK passport proof. No KYC, no data leak." class="demo-btn-gold">Verify Age (Self QR)</button>
       <button onclick="demoCall('/api/bridge','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831',amount:'1000000',chainIn:'base',chainOut:'arbitrum'})" title="Move 1 USDC from Base to Arbitrum via Across Protocol." class="demo-btn-paid">Bridge Base-Arb ($0.01)</button>
       <button onclick="demoCall('/api/ask','POST',{prompt:'What is cross-chain arbitrage in 2 sentences?'})" title="Bankr LLM Gateway — 15 models, USDC-funded inference." class="demo-btn-paid">Ask Bankr ($0.01)</button>
+    </div>
+
+    <div id="self-verified-section" style="display:none;margin-top:10px;">
+      <p style="color:#C4A335;font-size:0.8em;margin:0 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Self Verified — unlocked (3 free calls/day):</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button id="btn-free-ask" onclick="selfFreeCall('/api/demo/self-ask','POST',{prompt:'What makes AskJeev different from other AI agents?'})" title="Free inference via Bankr LLM — unlocked by Self verification." class="demo-btn-self-free self-glow">Ask Bankr (free)</button>
+        <button id="btn-free-analyze" onclick="selfFreeCall('/api/demo/self-analyze','POST',{prompt:'Analyze the current ETH/USDC market in one paragraph.'})" title="Free private analysis via Venice AI — unlocked by Self verification." class="demo-btn-self-free self-glow">Private Analyze (free)</button>
+        <button id="btn-free-image" onclick="selfFreeCall('/api/demo/self-image','POST',{prompt:'a robot butler in a retro 2000s internet cafe',model:'chroma',width:512,height:512})" title="Free uncensored image generation — unlocked by Self 18+ verification." class="demo-btn-self-free self-glow">Image Gen (free)</button>
+      </div>
     </div>
   </div>
   <div id="demo-result" style="display:none;background:#1B3A5C;border:2px inset #999;padding:14px;margin:10px 0;max-height:420px;overflow-y:auto;">
@@ -379,11 +400,22 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
           if (sd.verified) {
             clearInterval(pollInterval);
             selfVerifiedUserId = data.userId;
-            st.textContent = 'Age verified! You are 18+ (ZK passport proof)';
-            st.style.color = '#4ade80';
-            statusP.textContent = 'Verified! You can now generate images.';
-            statusP.style.color = '#4ade80';
-            js.textContent = JSON.stringify({ status: 'VERIFIED', age: '18+', method: 'ZK passport proof via Self Protocol', userId: data.userId, note: 'You can now click Image Gen to generate uncensored images.' }, null, 2);
+
+            // Collapse QR and show verified state
+            el.style.display = 'none';
+            var verifySection = document.getElementById('self-verify-section');
+            verifySection.style.borderColor = '#2B7A3A';
+            verifySection.style.background = '#0d2818';
+            document.getElementById('self-verify-label').textContent = 'Self Identity: Verified (18+)';
+            document.getElementById('self-verify-label').style.color = '#4CAF50';
+            var verifyBtn = document.getElementById('self-verify-btn');
+            verifyBtn.textContent = 'Verified';
+            verifyBtn.className = 'demo-btn-self-verified';
+            verifyBtn.onclick = null;
+            verifyBtn.style.cursor = 'default';
+
+            // Show self-verified free buttons
+            document.getElementById('self-verified-section').style.display = 'block';
           }
         } catch(e) {}
       }, 2000);
@@ -391,6 +423,58 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       st.style.color = '#ef4444';
       st.textContent = 'Error: ' + (e.message || 'Failed to generate QR');
     }
+  }
+
+  async function selfFreeCall(path, method, body) {
+    if (!selfVerifiedUserId) {
+      var el = document.getElementById('demo-result');
+      el.style.display = 'block';
+      document.getElementById('demo-status').textContent = 'Self verification required';
+      document.getElementById('demo-status').style.color = '#ef4444';
+      document.getElementById('demo-json').textContent = 'Click "Verify Age (Self QR)" first to unlock free inference.';
+      return;
+    }
+    var el = document.getElementById('demo-result');
+    var st = document.getElementById('demo-status');
+    var js = document.getElementById('demo-json');
+    el.style.display = 'block';
+    document.getElementById('demo-pay-btn').innerHTML = '';
+    st.textContent = 'Calling ' + path + ' (Self verified — free)...';
+    st.style.color = '#C4A335';
+    js.textContent = '';
+
+    try {
+      var start = Date.now();
+      var reqBody = Object.assign({}, body || {}, { selfUserId: selfVerifiedUserId });
+      var r = await fetch(path, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+      });
+      var ms = Date.now() - start;
+      st.style.color = r.status === 200 ? '#4ade80' : '#ef4444';
+      st.textContent = method + ' ' + path + ' — ' + r.status + ' (' + ms + 'ms) [Self verified — FREE]';
+
+      var data = await r.json();
+      if (data.result && data.result.images && data.result.images[0] && data.result.images[0].length > 200) {
+        var imgData = data.result.images[0];
+        var displayData = Object.assign({}, data);
+        displayData.result = Object.assign({}, data.result);
+        displayData.result.images = ['[rendered below]'];
+        js.textContent = JSON.stringify(displayData, null, 2);
+        var imgEl = document.createElement('img');
+        imgEl.src = 'data:image/webp;base64,' + imgData;
+        imgEl.style.cssText = 'max-width:100%;margin-top:12px;border:2px solid #C4A335;';
+        document.getElementById('demo-pay-btn').innerHTML = '';
+        document.getElementById('demo-pay-btn').appendChild(imgEl);
+      } else {
+        js.textContent = JSON.stringify(data, null, 2);
+      }
+    } catch(e) {
+      st.style.color = '#ef4444';
+      st.textContent = 'Error: ' + (e.message || 'Request failed');
+    }
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   function demoCall(path, method, body) {
@@ -574,7 +658,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v3.7.0</span>
+    <span style="float:right;">v4.0.0</span>
   </div>
 </div>
 </body>
@@ -810,6 +894,91 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     const session = selfVerifiedSessions.get(userId);
     if (!session) return c.json({ verified: false, status: 'unknown' });
     return c.json({ verified: session.verified, status: session.verified ? 'verified' : 'pending' });
+  });
+
+  // Free inference for Self-verified users (3 calls/day per endpoint)
+  const selfFreeUsage = new Map<string, { count: number; resetAt: number }>();
+
+  function checkSelfFreeLimit(userId: string, endpoint: string): boolean {
+    const key = `${userId}:${endpoint}`;
+    const now = Date.now();
+    const usage = selfFreeUsage.get(key);
+    if (!usage || now > usage.resetAt) {
+      selfFreeUsage.set(key, { count: 1, resetAt: now + 24 * 60 * 60 * 1000 });
+      return true;
+    }
+    if (usage.count >= 3) return false;
+    usage.count++;
+    return true;
+  }
+
+  app.post('/api/demo/self-ask', async (c) => {
+    try {
+      const { prompt, selfUserId } = await c.req.json();
+      if (!selfUserId || !selfVerifiedSessions.get(selfUserId)?.verified) {
+        return c.json({ error: 'Self verification required. Scan QR first.' }, 403);
+      }
+      if (!checkSelfFreeLimit(selfUserId, 'ask')) {
+        return c.json({ error: 'Free limit reached (3/day). Pay via x402 for more.' }, 429);
+      }
+      if (!prompt) return c.json({ error: 'prompt required' }, 400);
+
+      const response = await chat(
+        [{ role: 'system', content: 'Be concise and helpful.' }, { role: 'user', content: prompt }],
+        { model: 'gemini-2.5-flash' },
+      );
+      return c.json({
+        answer: response.choices[0].message.content,
+        model: response.model,
+        selfVerified: true,
+        freeInference: true,
+        note: 'Free inference unlocked by Self Protocol age verification (3/day)',
+      });
+    } catch (err: any) { return c.json({ error: err.message }, 500); }
+  });
+
+  app.post('/api/demo/self-analyze', async (c) => {
+    try {
+      const { prompt, selfUserId } = await c.req.json();
+      if (!selfUserId || !selfVerifiedSessions.get(selfUserId)?.verified) {
+        return c.json({ error: 'Self verification required. Scan QR first.' }, 403);
+      }
+      if (!checkSelfFreeLimit(selfUserId, 'analyze')) {
+        return c.json({ error: 'Free limit reached (3/day). Pay via x402 for more.' }, 429);
+      }
+      if (!prompt) return c.json({ error: 'prompt required' }, 400);
+
+      const analysis = await analyzePrivately(prompt);
+      return c.json({
+        analysis,
+        privacy: 'venice-zero-retention',
+        selfVerified: true,
+        freeInference: true,
+        note: 'Free private analysis unlocked by Self Protocol age verification (3/day)',
+      });
+    } catch (err: any) { return c.json({ error: err.message }, 500); }
+  });
+
+  app.post('/api/demo/self-image', async (c) => {
+    try {
+      const { prompt, model, width, height, selfUserId } = await c.req.json();
+      if (!selfUserId || !selfVerifiedSessions.get(selfUserId)?.verified) {
+        return c.json({ error: 'Self verification required (18+). Scan QR first.' }, 403);
+      }
+      if (!checkSelfFreeLimit(selfUserId, 'image')) {
+        return c.json({ error: 'Free limit reached (3/day). Pay via x402 for more.' }, 429);
+      }
+      if (!prompt) return c.json({ error: 'prompt required' }, 400);
+
+      const result = await generateImage(prompt, { model: model || 'chroma', width: width || 512, height: height || 512 });
+      return c.json({
+        result: { images: result.images, model: result.model },
+        privacy: 'venice-zero-retention',
+        selfVerified: true,
+        freeInference: true,
+        note: 'Free uncensored image generation unlocked by Self Protocol 18+ ZK verification (3/day)',
+      });
+    } catch (err: any) { return c.json({ error: err.message }, 500); }
   });
 
   // Demo proxy: agent pays for its own services via x402 (self-sustaining economics demo)
