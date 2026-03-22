@@ -4,7 +4,9 @@
 
 **Live:** [synthesis-hackathon-beta.vercel.app](https://synthesis-hackathon-beta.vercel.app)
 
-![AskJeev Live Demo](docs/screenshots/askjeev-live-demo.gif)
+[![AskJeev Demo Video](https://img.youtube.com/vi/R3mYlgOigzs/maxresdefault.jpg)](https://youtu.be/R3mYlgOigzs)
+
+*Click to watch the full demo — Self QR verification, x402 payments, image generation, portfolio rebalancing*
 
 ## What It Does
 
