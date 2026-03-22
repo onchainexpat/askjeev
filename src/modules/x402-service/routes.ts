@@ -251,10 +251,16 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     <div id="self-verified-section" style="display:none;margin-top:10px;">
       <p style="color:#C4A335;font-size:0.8em;margin:0 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Self Verified — unlocked (3 free calls/day):</p>
       <textarea id="self-prompt" maxlength="500" rows="2" placeholder="Ask anything... (500 char max)" style="width:100%;padding:8px;margin-bottom:8px;font-family:Georgia,serif;font-size:0.9em;background:#FDFAF3;border:2px solid #C4A335;color:#333;resize:vertical;"></textarea>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
         <button id="btn-free-ask" onclick="selfFreeCall('/api/demo/self-ask','POST',{prompt:document.getElementById('self-prompt').value||'What is cross-chain arbitrage?'})" title="Free inference via Bankr LLM — unlocked by Self verification." class="demo-btn-self-free self-glow">Ask Bankr (free)</button>
         <button id="btn-free-analyze" onclick="selfFreeCall('/api/demo/self-analyze','POST',{prompt:document.getElementById('self-prompt').value||'Analyze the current ETH market in one paragraph.'})" title="Free private analysis via Venice AI — unlocked by Self verification." class="demo-btn-self-free self-glow">Private Analyze (free)</button>
         <button id="btn-free-image" onclick="selfFreeCall('/api/demo/self-image','POST',{prompt:document.getElementById('self-prompt').value||'a robot butler in a retro 2000s internet cafe',model:'chroma',width:512,height:512})" title="Free uncensored image generation — unlocked by Self 18+ verification." class="demo-btn-self-free self-glow">Image Gen (free)</button>
+      </div>
+      <p style="color:#C4A335;font-size:0.8em;margin:0 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Private Portfolio Rebalance Planner:</p>
+      <input id="rebalance-addr" maxlength="42" placeholder="Wallet address (0x... or leave blank for agent wallet)" style="width:100%;padding:6px 8px;margin-bottom:6px;font-family:'Courier New',monospace;font-size:0.85em;background:#FDFAF3;border:2px solid #C4A335;color:#333;" />
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button onclick="selfFreeCall('/api/demo/self-rebalance','POST',{address:document.getElementById('rebalance-addr').value,strategy:'conservative'})" title="Venice privately analyzes the wallet and suggests conservative swaps (preserve capital, favor stablecoins)." class="demo-btn-self-free self-glow">Rebalance: Conservative (free)</button>
+        <button onclick="selfFreeCall('/api/demo/self-rebalance','POST',{address:document.getElementById('rebalance-addr').value,strategy:'aggressive'})" title="Venice privately analyzes the wallet and suggests aggressive swaps (maximize ETH exposure, growth-oriented)." class="demo-btn-self-free self-glow">Rebalance: Aggressive (free)</button>
       </div>
     </div>
   </div>
@@ -560,7 +566,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     <tr><td>/api/swap-quote</td><td>POST</td><td class="price">$0.005</td><td>Uniswap swap quote on any of 18 chains</td></tr>
     <tr><td>/api/private-analyze</td><td>POST</td><td class="price">$0.02</td><td>Venice AI private analysis (zero data retention)</td></tr>
     <tr><td>/api/ask</td><td>POST</td><td class="price">$0.01</td><td>Bankr multi-model reasoning (20+ models)</td></tr>
-    <tr><td>/api/rebalance</td><td>POST</td><td class="price">$0.02</td><td>Private portfolio rebalancer</td></tr>
+    <tr><td>/api/rebalance</td><td>POST</td><td class="price">$0.02</td><td>Private portfolio rebalance planner (Venice + Uniswap routes)</td></tr>
     <tr><td>/api/discover</td><td>POST</td><td class="price">$0.01</td><td>x402 service discovery</td></tr>
     <tr><td>/api/generate-image</td><td>POST</td><td class="price">$0.03</td><td>Uncensored image generation (Self 18+ only)</td></tr>
     <tr><td>/api/limit-order</td><td>POST</td><td class="price">$0.01</td><td>Gasless limit order via UniswapX</td></tr>
@@ -663,7 +669,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v4.3.0</span>
+    <span style="float:right;">v5.0.0</span>
   </div>
 </div>
 </body>
@@ -982,6 +988,137 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
         selfVerified: true,
         freeInference: true,
         note: 'Free uncensored image generation unlocked by Self Protocol 18+ ZK verification (3/day)',
+      });
+    } catch (err: any) { return c.json({ error: err.message }, 500); }
+  });
+
+  // Private Portfolio Rebalance Planner (Self-verified, free 3/day)
+  app.post('/api/demo/self-rebalance', async (c) => {
+    try {
+      const { address, strategy, selfUserId } = await c.req.json();
+      if (!selfUserId || !selfVerifiedSessions.get(selfUserId)?.verified) {
+        return c.json({ error: 'Self verification required. Scan QR first.' }, 403);
+      }
+      if (!checkSelfFreeLimit(selfUserId, 'rebalance')) {
+        return c.json({ error: 'Free limit reached (3/day). Pay via x402 for more.' }, 429);
+      }
+
+      const targetAddress = address || getAccount().address;
+      const riskStrategy = strategy === 'aggressive' ? 'aggressive' : 'conservative';
+
+      // Step 1: Read wallet balances on Base
+      const { getTokenBalance } = await import('../uniswap/client.js');
+      const { TOKENS: T } = await import('../../config.js');
+
+      const ethBal = await getTokenBalance('0x0000000000000000000000000000000000000000' as any, targetAddress as any, 'base');
+      const usdcBal = await getTokenBalance(T.base.USDC as any, targetAddress as any, 'base');
+      const wethBal = await getTokenBalance(T.base.WETH as any, targetAddress as any, 'base');
+
+      const ethFormatted = (Number(ethBal) / 1e18).toFixed(6);
+      const usdcFormatted = (Number(usdcBal) / 1e6).toFixed(2);
+      const wethFormatted = (Number(wethBal) / 1e18).toFixed(6);
+
+      // Step 2: Get ETH price via Uniswap quote
+      let ethPriceUsd = 2000;
+      try {
+        const priceQuote = await getQuote(
+          '0x0000000000000000000000000000000000000000' as any,
+          T.base.USDC as any,
+          '1000000000000000',
+          targetAddress as any,
+          'base',
+        );
+        const outAmount = priceQuote.quote?.output?.amount || priceQuote.quote?.orderInfo?.outputs?.[0]?.startAmount;
+        if (outAmount) ethPriceUsd = Number(outAmount) / 1e6 / 0.001;
+      } catch {}
+
+      const ethValueUsd = Number(ethFormatted) * ethPriceUsd;
+      const wethValueUsd = Number(wethFormatted) * ethPriceUsd;
+      const usdcValueUsd = Number(usdcFormatted);
+      const totalUsd = ethValueUsd + wethValueUsd + usdcValueUsd;
+
+      const portfolio = {
+        address: targetAddress,
+        totalValueUSD: Math.round(totalUsd * 100) / 100,
+        holdings: [
+          { token: 'ETH', balance: ethFormatted, valueUSD: Math.round(ethValueUsd * 100) / 100, percent: totalUsd > 0 ? Math.round(ethValueUsd / totalUsd * 100) : 0 },
+          { token: 'WETH', balance: wethFormatted, valueUSD: Math.round(wethValueUsd * 100) / 100, percent: totalUsd > 0 ? Math.round(wethValueUsd / totalUsd * 100) : 0 },
+          { token: 'USDC', balance: usdcFormatted, valueUSD: Math.round(usdcValueUsd * 100) / 100, percent: totalUsd > 0 ? Math.round(usdcValueUsd / totalUsd * 100) : 0 },
+        ],
+      };
+
+      // Step 3: Venice private analysis with strategy
+      const strategyPrompt = riskStrategy === 'aggressive'
+        ? 'You are an aggressive DeFi portfolio strategist. Maximize exposure to volatile assets (ETH/WETH). Suggest high-growth allocations. Recommend specific swaps and any cross-chain opportunities.'
+        : 'You are a conservative DeFi portfolio strategist. Prioritize capital preservation with stablecoins (USDC). Minimize volatility exposure. Suggest safe allocations with small ETH positions for gas.';
+
+      const analysis = await analyzePrivately(
+        `${strategyPrompt}\n\nAnalyze this Base wallet portfolio and provide a rebalancing plan:\n${JSON.stringify(portfolio, null, 2)}\n\nProvide:\n1. Recommended target allocation (percentages)\n2. Specific swaps needed (token, amount, direction)\n3. Brief rationale (2-3 sentences)\n\nBe concise and actionable.`,
+      );
+
+      // Step 4: Get Uniswap quotes for suggested swaps
+      const routes: any[] = [];
+      if (riskStrategy === 'conservative' && Number(ethFormatted) > 0.001) {
+        try {
+          const swapQuote = await getQuote(
+            '0x0000000000000000000000000000000000000000' as any,
+            T.base.USDC as any,
+            BigInt(Math.floor(Number(ethBal) * 0.3)).toString(),
+            targetAddress as any,
+            'base',
+          );
+          routes.push({
+            action: 'Swap 30% ETH → USDC (de-risk)',
+            routing: swapQuote.routing,
+            estimatedOutput: swapQuote.quote?.output?.amount ? (Number(swapQuote.quote.output.amount) / 1e6).toFixed(2) + ' USDC' : 'see quote',
+            gasFeeUSD: swapQuote.quote?.gasFeeUSD || 'minimal',
+          });
+        } catch {}
+      } else if (riskStrategy === 'aggressive' && Number(usdcFormatted) > 1) {
+        try {
+          const swapQuote = await getQuote(
+            T.base.USDC as any,
+            '0x0000000000000000000000000000000000000000' as any,
+            BigInt(Math.floor(Number(usdcBal) * 0.5)).toString(),
+            targetAddress as any,
+            'base',
+          );
+          routes.push({
+            action: 'Swap 50% USDC → ETH (growth)',
+            routing: swapQuote.routing,
+            estimatedOutput: swapQuote.quote?.output?.amount ? (Number(swapQuote.quote.output.amount) / 1e18).toFixed(6) + ' ETH' : 'see quote',
+            gasFeeUSD: swapQuote.quote?.gasFeeUSD || 'minimal',
+          });
+        } catch {}
+      }
+
+      // Step 5: Check cross-chain bridge opportunity
+      try {
+        const bridgeQuote = await getBridgeQuote(
+          T.base.USDC as any,
+          '0xaf88d065e77c8cC2239327C5EDb3A432268e5831' as any,
+          '1000000',
+          targetAddress as any,
+          'base',
+          'arbitrum',
+        );
+        routes.push({
+          action: 'Bridge 1 USDC Base → Arbitrum (diversify chains)',
+          bridge: 'Across Protocol',
+          estimatedOutput: bridgeQuote.quote?.output?.amount ? (Number(bridgeQuote.quote.output.amount) / 1e6).toFixed(4) + ' USDC on Arbitrum' : 'see quote',
+          estimatedFillTime: bridgeQuote.quote?.estimatedFillTimeMs ? bridgeQuote.quote.estimatedFillTimeMs + 'ms' : 'fast',
+        });
+      } catch {}
+
+      return c.json({
+        strategy: riskStrategy,
+        portfolio,
+        analysis,
+        suggestedRoutes: routes,
+        privacy: 'venice-zero-retention',
+        selfVerified: true,
+        freeInference: true,
+        note: 'Private portfolio analysis — your holdings data is never stored (Venice zero-retention). Rebalance routes via Uniswap + Across Protocol.',
       });
     } catch (err: any) { return c.json({ error: err.message }, 500); }
   });
