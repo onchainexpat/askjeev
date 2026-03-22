@@ -735,7 +735,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v6.4.0</span>
+    <span style="float:right;">v6.5.0</span>
   </div>
 </div>
 </body>
@@ -1744,45 +1744,68 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     }
   });
 
-  // Private Portfolio Rebalancer
+  // Private Portfolio Rebalance Planner (Zerion + Venice + Uniswap routes)
   app.post('/api/rebalance', async (c) => {
     try {
       const body = await c.req.json();
-      const { targets, dryRun, maxSlippage } = body;
+      const { address, strategy } = body;
+      const targetAddress = address || getAccount().address;
+      const riskStrategy = strategy === 'aggressive' ? 'aggressive' : 'conservative';
 
-      if (!targets || !Array.isArray(targets) || targets.length === 0) {
-        return c.json({ error: 'targets array required (e.g., [{"symbol":"ETH","targetPercent":50}])' }, 400);
+      // Read full portfolio via Zerion
+      const zerionKey = 'zk_169f8e062aa84389bc6cff985dbe931c';
+      const zerionAuth = 'Basic ' + btoa(zerionKey + ':');
+      const zerionRes = await fetch(
+        `https://api.zerion.io/v1/wallets/${targetAddress}/positions/?filter[positions]=only_simple&currency=usd&sort=value`,
+        { headers: { 'Authorization': zerionAuth, 'accept': 'application/json' } },
+      );
+      const zerionData = await zerionRes.json();
+      const positions = (zerionData.data || []).slice(0, 20);
+
+      let totalUsd = 0;
+      const holdings: { token: string; symbol: string; balance: string; valueUSD: number; percent: number }[] = [];
+      for (const p of positions) {
+        const attr = p.attributes;
+        const symbol = attr.fungible_info?.symbol || '?';
+        const name = attr.fungible_info?.name || symbol;
+        const value = attr.value || 0;
+        const qty = attr.quantity?.float || 0;
+        if (value > 1) {
+          totalUsd += value;
+          holdings.push({ token: name, symbol, balance: qty > 1000000 ? Math.round(qty).toLocaleString() : qty.toFixed(4), valueUSD: Math.round(value * 100) / 100, percent: 0 });
+        }
       }
+      for (const h of holdings) h.percent = totalUsd > 0 ? Math.round(h.valueUSD / totalUsd * 100) : 0;
 
-      const result = await rebalancePortfolio({ targets, dryRun, maxSlippage });
+      const portfolio = { address: targetAddress, source: 'Zerion API (all chains)', totalValueUSD: Math.round(totalUsd * 100) / 100, holdings };
 
-      await log('service_rebalance', 'api/rebalance', {
-        targetCount: targets.length,
-        dryRun: dryRun !== false,
-        earned: '$0.02',
-      }, {
-        swapCount: result.swaps.length,
-        executed: result.executed,
-        transactions: result.transactions.length,
-      });
+      // Venice private analysis
+      const strategyPrompt = riskStrategy === 'aggressive'
+        ? 'You are an aggressive DeFi portfolio strategist. Maximize exposure to volatile assets (ETH/WETH). Suggest high-growth allocations. Recommend specific swaps and cross-chain opportunities.'
+        : 'You are a conservative DeFi portfolio strategist. Prioritize capital preservation with stablecoins (USDC). Minimize volatility. Suggest safe allocations.';
+      const rebalanceAnalysis = await privateReason(
+        [{ role: 'system', content: strategyPrompt }, { role: 'user', content: `Analyze this portfolio and provide a rebalancing plan:\n${JSON.stringify(portfolio, null, 2)}\n\nProvide:\n1. Target allocation (percentages)\n2. Specific swaps needed\n3. Brief rationale (2-3 sentences)\n\nBe concise and actionable.` }],
+        { model: 'deepseek-v3.2' },
+      );
+      const analysis = rebalanceAnalysis.choices[0].message.content;
 
-      return c.json({
-        portfolio: {
-          wallet: result.portfolio.wallet,
-          totalValueUSD: result.portfolio.totalValueUSD,
-          allocations: result.portfolio.allocations.map(a => ({
-            symbol: a.symbol,
-            balance: a.balanceFormatted,
-            valueUSD: Math.round(a.valueUSD * 100) / 100,
-            percent: a.percentOfTotal,
-          })),
-        },
-        swaps: result.swaps,
-        analysis: result.analysis,
-        executed: result.executed,
-        transactions: result.transactions,
-        privacy: 'venice-zero-retention',
-      });
+      // Generate swap route suggestions
+      const coreTokens = ['ETH', 'WETH', 'USDC', 'USDT', 'DAI', 'stETH', 'wstETH'];
+      const memeHoldings = holdings.filter(h => !coreTokens.includes(h.symbol) && h.valueUSD > 10);
+      const routes: any[] = [];
+      if (riskStrategy === 'conservative') {
+        for (const meme of memeHoldings.slice(0, 3)) {
+          routes.push({ action: `Sell ${meme.symbol} ($${meme.valueUSD}) → USDC`, reason: 'Convert volatile asset to stablecoin', route: 'Uniswap' });
+        }
+      } else {
+        const usdcH = holdings.find(h => h.symbol === 'USDC');
+        if (usdcH && usdcH.valueUSD > 100) routes.push({ action: `Swap 70% USDC ($${Math.round(usdcH.valueUSD * 0.7)}) → ETH`, reason: 'Maximize ETH exposure', route: 'Uniswap' });
+      }
+      routes.push({ action: 'Bridge assets to L2 for lower gas', bridge: 'Across Protocol (ERC-7683)' });
+
+      await log('service_rebalance', 'api/rebalance', { address: targetAddress, strategy: riskStrategy, earned: '$0.02' }, { holdings: holdings.length });
+
+      return c.json({ strategy: riskStrategy, portfolio, analysis, suggestedRoutes: routes, privacy: 'venice-zero-retention' });
     } catch (err: any) {
       return c.json({ error: err.message }, 500);
     }
