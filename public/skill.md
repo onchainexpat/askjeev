@@ -44,9 +44,13 @@ Bankr LLM Gateway — 15 models including Claude, GPT, Gemini.
 ### Portfolio Rebalance Planner ($0.02)
 ```
 POST /api/rebalance
-{"address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", "strategy": "conservative"}
+{"address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", "strategy": "aggressive"}
 ```
-Reads full portfolio via Zerion (all chains, all tokens). Venice AI privately analyzes and suggests rebalancing swaps. Strategy: `conservative` (favor stablecoins) or `aggressive` (maximize ETH). Includes Uniswap/Across route suggestions.
+Reads full portfolio via Zerion (all chains, all tokens). Venice AI privately analyzes and suggests rebalancing swaps with Uniswap/Across routes.
+
+Parameters:
+- `address` (or `wallet`) — any Ethereum address to analyze
+- `strategy` (or `risk_profile`) — `conservative` (favor stablecoins) or `aggressive` (90%+ ETH)
 
 ### Cross-Chain Bridge ($0.01)
 ```

@@ -1748,9 +1748,10 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   app.post('/api/rebalance', async (c) => {
     try {
       const body = await c.req.json();
-      const { address, strategy } = body;
-      const targetAddress = address || getAccount().address;
-      const riskStrategy = strategy === 'aggressive' ? 'aggressive' : 'conservative';
+      // Accept multiple param names for flexibility (address/wallet, strategy/risk_profile/risk)
+      const targetAddress = body.address || body.wallet || body.walletAddress || getAccount().address;
+      const strategyInput = (body.strategy || body.risk_profile || body.risk || body.mode || 'conservative').toString().toLowerCase();
+      const riskStrategy = (strategyInput.includes('aggr') || strategyInput.includes('risk') || strategyInput.includes('degen') || strategyInput.includes('max')) ? 'aggressive' : 'conservative';
 
       // Read full portfolio via Zerion
       const zerionKey = 'zk_169f8e062aa84389bc6cff985dbe931c';
