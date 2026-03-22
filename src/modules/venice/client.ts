@@ -29,7 +29,7 @@ export async function privateReason(
   } = {},
 ): Promise<VeniceResponse> {
   const {
-    model = 'llama-3.3-70b',
+    model = 'venice-uncensored',
     temperature = 0,
     maxTokens = 4096,
     webSearch = false,
