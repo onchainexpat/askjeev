@@ -574,7 +574,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v3.3.0</span>
+    <span style="float:right;">v3.4.0</span>
   </div>
 </div>
 </body>
@@ -771,7 +771,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       const verifier = new SelfBackendVerifier(
         'askjeev-age-verify',
         `${baseUrl}/api/self-verify-proof`,
-        false,
+        true,
         AllIds,
         configStore,
         'uuid',
