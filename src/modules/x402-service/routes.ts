@@ -574,7 +574,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v3.0.0</span>
+    <span style="float:right;">v3.1.0</span>
   </div>
 </div>
 </body>
@@ -759,15 +759,19 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
         return c.json({ status: 'error', result: false, reason: 'Missing proof fields' }, 400);
       }
 
-      const { SelfBackendVerifier, AllIds } = await import('@selfxyz/core');
+      const { SelfBackendVerifier, AllIds, DefaultConfigStore } = await import('@selfxyz/core');
       const baseUrl = deployedUrl || `https://${process.env.VERCEL_URL || 'localhost:3402'}`;
+
+      const configStore = new DefaultConfigStore({
+        minimumAge: 18,
+      });
 
       const verifier = new SelfBackendVerifier(
         'askjeev-age-verify',
         `${baseUrl}/api/self-verify-proof`,
         false,
         AllIds,
-        undefined as any,
+        configStore,
         'uuid',
       );
 
