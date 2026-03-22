@@ -691,7 +691,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v5.7.0</span>
+    <span style="float:right;">v5.8.0</span>
   </div>
 </div>
 </body>
@@ -1034,7 +1034,10 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       const { createPublicClient, http } = await import('viem');
       const { mainnet } = await import('viem/chains');
 
-      const ethL1Client = createPublicClient({ chain: mainnet, transport: http('https://eth.llamarpc.com') });
+      const ethL1Client = createPublicClient({
+        chain: mainnet,
+        transport: http('https://ethereum.publicnode.com', { timeout: 15000 }),
+      });
       const addr = targetAddress as `0x${string}`;
       const erc20BalAbi = [{ name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'account', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] }] as const;
 
@@ -1064,6 +1067,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
         readL1Token(l1Tokens.stETH),
       ]);
 
+      console.log('[rebalance] L1 balances:', { l1Eth, l1Usdc, l1Weth, l1Pepe, l1StEth, l1Uni, l1Link, l1Shib });
       const ethFormatted = ((Number(baseEth) + Number(l1Eth)) / 1e18).toFixed(6);
       const usdcFormatted = ((Number(baseUsdc) / 1e6) + (Number(l1Usdc) / 1e6)).toFixed(2);
       const wethFormatted = ((Number(baseWeth) + Number(l1Weth)) / 1e18).toFixed(6);
