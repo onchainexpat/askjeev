@@ -574,7 +574,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v3.6.0</span>
+    <span style="float:right;">v3.7.0</span>
   </div>
 </div>
 </body>
@@ -781,8 +781,11 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
             'uuid',
           );
           result = await v.verify(attestationId, proof, publicSignals, userContextData);
+          console.log(`[self-qr] ${isMock ? 'testnet' : 'mainnet'} verify:`, JSON.stringify(result.isValidDetails));
           if (result.isValidDetails?.isValid) break;
-        } catch { /* try next */ }
+        } catch (e: any) {
+          console.error(`[self-qr] ${isMock ? 'testnet' : 'mainnet'} error:`, e.message);
+        }
       }
 
       if (result?.isValidDetails?.isValid) {
