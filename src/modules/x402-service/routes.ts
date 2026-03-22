@@ -243,7 +243,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
     <p style="color:#1B3A5C;font-size:0.8em;margin:10px 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Paid — x402 payment required (USDC on Base):</p>
     <div style="display:flex;gap:6px;flex-wrap:wrap;">
-      <button onclick="demoCall('/api/arbitrage','POST',{mode:'cross-chain',chains:['ethereum','base','unichain','zksync','linea'],minSpreadPercent:0})" title="Full 5-chain WETH arbitrage scan with Venice AI analysis." class="demo-btn-paid">Full Arbitrage ($0.01)</button>
+      <button id="btn-arb" onclick="demoCall('/api/arbitrage','POST',{mode:'cross-chain',chains:['ethereum','base','unichain','zksync','linea','arbitrum','polygon','optimism'],minSpreadPercent:0})" title="Cross-chain WETH arbitrage. Standard: 5 chains. Self-verified: 8 chains + Venice AI analysis." class="demo-btn-paid">Full Arbitrage ($0.01)</button>
       <button onclick="demoCall('/api/bridge','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831',amount:'1000000',chainIn:'base',chainOut:'arbitrum'})" title="Move 1 USDC from Base to Arbitrum via Across Protocol." class="demo-btn-paid">Bridge Base-Arb ($0.01)</button>
       <button onclick="demoCall('/api/ask','POST',{prompt:'What is cross-chain arbitrage in 2 sentences?'})" title="Bankr LLM Gateway — 15 models, USDC-funded inference." class="demo-btn-paid">Ask Bankr ($0.01)</button>
     </div>
@@ -326,7 +326,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       var r = await fetch('/api/demo/pay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ endpoint: path, body: body }),
+        body: JSON.stringify({ endpoint: path, body: body, selfUserId: selfVerifiedUserId }),
       });
       var ms = Date.now() - start;
       var color = r.status === 200 ? '#4ade80' : '#ef4444';
@@ -416,6 +416,10 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
             // Show self-verified free buttons
             document.getElementById('self-verified-section').style.display = 'block';
+
+            // Add glow to paid buttons that benefit from Self verification
+            document.getElementById('btn-arb').classList.add('self-glow');
+            document.getElementById('btn-arb').textContent = 'Full Arbitrage — Premium ($0.01)';
           }
         } catch(e) {}
       }, 2000);
@@ -658,7 +662,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v4.0.0</span>
+    <span style="float:right;">v4.1.0</span>
   </div>
 </div>
 </body>
@@ -984,8 +988,25 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   // Demo proxy: agent pays for its own services via x402 (self-sustaining economics demo)
   app.post('/api/demo/pay', async (c) => {
     try {
-      const { endpoint, body: reqBody } = await c.req.json();
+      const { endpoint, body: reqBody, selfUserId } = await c.req.json();
       if (!endpoint) return c.json({ error: 'endpoint required' }, 400);
+
+      // If caller is Self-verified via QR and calling arbitrage, run premium tier directly
+      if (endpoint === '/api/arbitrage' && selfUserId && selfVerifiedSessions.get(selfUserId)?.verified) {
+        const arbResult = await detectArbitrage({
+          ...(reqBody || {}),
+          selfVerified: true,
+        });
+        return c.json({
+          paidBy: 'AskJeev agent wallet (self-sustaining)',
+          paidFrom: getAccount().address,
+          endpoint,
+          status: 200,
+          selfVerified: true,
+          accessTier: 'premium',
+          result: arbResult,
+        });
+      }
 
       const allowedEndpoints = ['/api/arbitrage', '/api/ask', '/api/bridge', '/api/swap-quote', '/api/private-analyze', '/api/generate-image'];
       if (!allowedEndpoints.includes(endpoint)) {
