@@ -1147,7 +1147,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
       // Step 3: Venice private analysis with strategy
       const strategyPrompt = riskStrategy === 'aggressive'
-        ? 'You are an aggressive DeFi portfolio strategist. Maximize exposure to volatile assets (ETH/WETH). Suggest high-growth allocations. Recommend specific swaps and any cross-chain opportunities.'
+        ? 'You are a maximum-risk DeFi degen strategist. Target allocation: 90%+ ETH/WETH. Sell ALL stablecoins and memecoins for ETH. Do NOT recommend any conservative or balanced allocation. The user explicitly wants maximum ETH exposure and accepts all volatility risk. Suggest specific swaps to consolidate everything into ETH.'
         : 'You are a conservative DeFi portfolio strategist. Prioritize capital preservation with stablecoins (USDC). Minimize volatility exposure. Suggest safe allocations with small ETH positions for gas.';
 
       const rebalanceAnalysis = await privateReason(
@@ -1781,7 +1781,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
       // Venice private analysis
       const strategyPrompt = riskStrategy === 'aggressive'
-        ? 'You are an aggressive DeFi portfolio strategist. Maximize exposure to volatile assets (ETH/WETH). Suggest high-growth allocations. Recommend specific swaps and cross-chain opportunities.'
+        ? 'You are a maximum-risk DeFi degen strategist. Target allocation: 90%+ ETH/WETH. Sell ALL stablecoins and memecoins for ETH. Do NOT recommend any conservative or balanced allocation. The user explicitly wants maximum ETH exposure and accepts all volatility risk. Suggest specific swaps to consolidate everything into ETH.'
         : 'You are a conservative DeFi portfolio strategist. Prioritize capital preservation with stablecoins (USDC). Minimize volatility. Suggest safe allocations.';
       const rebalanceAnalysis = await privateReason(
         [{ role: 'system', content: strategyPrompt }, { role: 'user', content: `Analyze this portfolio and provide a rebalancing plan:\n${JSON.stringify(portfolio, null, 2)}\n\nProvide:\n1. Target allocation (percentages)\n2. Specific swaps needed\n3. Brief rationale (2-3 sentences)\n\nBe concise and actionable.` }],
