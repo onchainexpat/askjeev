@@ -574,7 +574,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v3.5.0</span>
+    <span style="float:right;">v3.6.0</span>
   </div>
 </div>
 </body>
@@ -793,7 +793,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
         return c.json({ status: 'success', result: true, userId });
       }
 
-      return c.json({ status: 'error', result: false, reason: 'Proof invalid' });
+      return c.json({ status: 'error', result: false, reason: 'Proof invalid', details: result?.isValidDetails || null });
     } catch (err: any) {
       console.error('Self verify proof error:', err.message);
       return c.json({ status: 'error', result: false, reason: err.message }, 500);
