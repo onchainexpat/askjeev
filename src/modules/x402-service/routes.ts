@@ -628,9 +628,50 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   </div>
 
   <h2>Try It</h2>
-  <pre>curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \\
+  <p style="color:#666;font-size:0.85em;margin-bottom:8px;font-family:Verdana,sans-serif;">Use the AI agent skill, Claude Code MCP, or cURL to get started.</p>
+  <div style="display:flex;gap:0;margin-bottom:0;">
+    <button onclick="showTab('tab-skill')" id="tab-btn-skill" style="background:#2B5C8A;color:#fff;border:2px outset #5A9CCA;border-bottom:none;padding:6px 16px;cursor:pointer;font-family:Verdana,sans-serif;font-size:0.8em;font-weight:bold;">Agent Skill</button>
+    <button onclick="showTab('tab-mcp')" id="tab-btn-mcp" style="background:#E8DCC8;color:#1B3A5C;border:2px outset #C4A335;border-bottom:none;padding:6px 16px;cursor:pointer;font-family:Verdana,sans-serif;font-size:0.8em;">Claude Code</button>
+    <button onclick="showTab('tab-curl')" id="tab-btn-curl" style="background:#E8DCC8;color:#1B3A5C;border:2px outset #C4A335;border-bottom:none;padding:6px 16px;cursor:pointer;font-family:Verdana,sans-serif;font-size:0.8em;">cURL</button>
+  </div>
+  <div id="tab-skill" style="border:2px solid #C4A335;border-top:2px solid #2B5C8A;padding:14px;background:#FDFAF3;">
+    <p style="font-size:0.85em;color:#333;margin-bottom:8px;">Install the AskJeev skill for any AI agent:</p>
+    <pre>curl -s https://synthesis-hackathon-beta.vercel.app/skill.md</pre>
+    <p style="font-size:0.85em;color:#333;margin:8px 0;">Or add to your agent's skill config:</p>
+    <pre>{
+  "skills": [{
+    "name": "askjeev",
+    "url": "https://synthesis-hackathon-beta.vercel.app/skill.md",
+    "description": "Cross-chain arbitrage, private analysis, image gen, portfolio rebalancing"
+  }]
+}</pre>
+    <p style="font-size:0.8em;color:#888;margin-top:8px;">The skill file tells AI agents how to discover and call AskJeev's x402 endpoints.</p>
+  </div>
+  <div id="tab-mcp" style="display:none;border:2px solid #C4A335;padding:14px;background:#FDFAF3;">
+    <p style="font-size:0.85em;color:#333;margin-bottom:8px;">One command for Claude Code:</p>
+    <pre>claude mcp add x402-wallet -- npx x402-wallet-mcp</pre>
+    <p style="font-size:0.85em;color:#333;margin:8px 0;">Then ask Claude:</p>
+    <pre>"Add synthesis-hackathon-beta.vercel.app to my x402 allowlist"
+
+"Scan for cross-chain arbitrage on ethereum, base, and linea
+ using https://synthesis-hackathon-beta.vercel.app/api/arbitrage"</pre>
+  </div>
+  <div id="tab-curl" style="display:none;border:2px solid #C4A335;padding:14px;background:#FDFAF3;">
+    <pre>curl -X POST https://synthesis-hackathon-beta.vercel.app/api/arbitrage \\
   -H "Content-Type: application/json" \\
   -d '{"mode": "cross-chain", "chains": ["ethereum", "base", "arbitrum"], "minSpreadPercent": 0.1}'</pre>
+    <p style="font-size:0.8em;color:#888;margin-top:8px;">Returns 402 — pay with x402 USDC on Base to get results.</p>
+  </div>
+  <script>
+  function showTab(id) {
+    ['tab-skill','tab-mcp','tab-curl'].forEach(function(t) {
+      document.getElementById(t).style.display = t === id ? 'block' : 'none';
+      var btn = document.getElementById('tab-btn-' + t.split('-')[1]);
+      if (t === id) { btn.style.background = '#2B5C8A'; btn.style.color = '#fff'; }
+      else { btn.style.background = '#E8DCC8'; btn.style.color = '#1B3A5C'; }
+    });
+  }
+  </script>
 
   <h2>Use with Claude Code / Claude Desktop</h2>
   <div class="info-box">
@@ -689,7 +730,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v6.1.0</span>
+    <span style="float:right;">v6.2.0</span>
   </div>
 </div>
 </body>
@@ -698,6 +739,21 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
   // Health check
   app.get('/health', (c) => c.json({ status: 'ok', agent: 'AskJeev', version: '0.1.0' }));
+
+  // Skill file for AI agents
+  app.get('/skill.md', async (c) => {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const skillPath = path.resolve(process.cwd(), 'public', 'skill.md');
+      const content = fs.readFileSync(skillPath, 'utf-8');
+      c.header('Content-Type', 'text/markdown');
+      return c.text(content);
+    } catch {
+      c.header('Content-Type', 'text/markdown');
+      return c.text('# AskJeev Skill\n\nSee https://synthesis-hackathon-beta.vercel.app for full documentation.');
+    }
+  });
 
   // ERC-8004 agent manifest
   app.get('/agent.json', (c) => {
