@@ -258,7 +258,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       </div>
       <p style="color:#C4A335;font-size:0.8em;margin:0 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Private Portfolio Rebalance Planner:</p>
       <input id="rebalance-addr" maxlength="42" value="0x6E5adF9C48203D239704c16268394adf0A21C6D0" placeholder="Wallet address on Base" style="width:100%;padding:6px 8px;margin-bottom:6px;font-family:'Courier New',monospace;font-size:0.85em;background:#FDFAF3;border:2px solid #C4A335;color:#333;" />
-      <p style="color:#888;font-size:0.75em;margin:-4px 0 6px;font-family:Verdana,sans-serif;">Reads full portfolio via Zerion (all chains, all tokens). Venice privately analyzes + suggests Uniswap/Across routes.</p>
+      <p style="color:#888;font-size:0.75em;margin:-4px 0 6px;font-family:Verdana,sans-serif;">Zerion reads full portfolio (all chains, all tokens). Venice AI privately analyzes + suggests swap/bridge routes.</p>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         <button id="btn-rebal-cons" onclick="selfFreeCall('/api/demo/self-rebalance','POST',{address:document.getElementById('rebalance-addr').value,strategy:'conservative'})" title="Venice privately analyzes the wallet and suggests conservative swaps." class="demo-btn-gold">Rebalance: Conservative (verify to unlock)</button>
         <button id="btn-rebal-aggr" onclick="selfFreeCall('/api/demo/self-rebalance','POST',{address:document.getElementById('rebalance-addr').value,strategy:'aggressive'})" title="Venice privately analyzes the wallet and suggests aggressive swaps." class="demo-btn-gold">Rebalance: Aggressive (verify to unlock)</button>
@@ -463,13 +463,11 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
     var isRebalance = path.indexOf('rebalance') >= 0;
     if (isRebalance) {
-      st.textContent = 'Step 1/4: Reading wallet balances on Base...';
+      st.textContent = 'Step 1/3: Reading full portfolio via Zerion...';
       st.style.color = '#C4A335';
-      js.textContent = 'This takes ~30s — reading balances, getting prices, Venice AI analysis, and Uniswap routing...';
-      // Simulate progress updates
-      setTimeout(function() { if (st.textContent.indexOf('Step 1') >= 0) { st.textContent = 'Step 2/4: Getting token prices via Uniswap...'; } }, 5000);
-      setTimeout(function() { if (st.textContent.indexOf('Step 2') >= 0) { st.textContent = 'Step 3/4: Venice AI analyzing portfolio (Qwen3-235B, private)...'; } }, 10000);
-      setTimeout(function() { if (st.textContent.indexOf('Step 3') >= 0) { st.textContent = 'Step 4/4: Finding Uniswap + Across routes...'; } }, 20000);
+      js.textContent = 'Fetching all tokens across all chains, then Venice AI privately analyzes your portfolio...';
+      setTimeout(function() { if (st.textContent.indexOf('Step 1') >= 0) { st.textContent = 'Step 2/3: Venice AI analyzing portfolio (Qwen3-235B, zero retention)...'; } }, 5000);
+      setTimeout(function() { if (st.textContent.indexOf('Step 2') >= 0) { st.textContent = 'Step 3/3: Generating rebalance routes...'; } }, 25000);
     } else {
       st.textContent = 'Calling ' + path + ' (Self verified — free)...';
       st.style.color = '#C4A335';
@@ -691,7 +689,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v6.0.0</span>
+    <span style="float:right;">v6.1.0</span>
   </div>
 </div>
 </body>
@@ -1083,7 +1081,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
           { role: 'system', content: strategyPrompt },
           { role: 'user', content: `Analyze this Base wallet portfolio and provide a rebalancing plan:\n${JSON.stringify(portfolio, null, 2)}\n\nProvide:\n1. Recommended target allocation (percentages)\n2. Specific swaps needed (token, amount, direction)\n3. Brief rationale (2-3 sentences)\n\nBe concise and actionable.` },
         ],
-        { model: 'qwen3-235b-a22b-instruct-2507' },
+        { model: 'deepseek-v3.2' },
       );
       const analysis = rebalanceAnalysis.choices[0].message.content;
 

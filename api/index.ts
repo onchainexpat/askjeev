@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createRoutes } from '../src/modules/x402-service/routes.js';
 
 export const config = {
-  maxDuration: 60,
+  maxDuration: 120,
 };
 
 const deployedUrl = process.env.DEPLOYED_URL
