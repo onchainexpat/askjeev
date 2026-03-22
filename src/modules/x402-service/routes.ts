@@ -450,7 +450,8 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       el.style.display = 'block';
       document.getElementById('demo-status').textContent = 'Self verification required';
       document.getElementById('demo-status').style.color = '#ef4444';
-      document.getElementById('demo-json').textContent = 'Click "Verify Age (Self QR)" first to unlock free inference.';
+      document.getElementById('demo-json').textContent = 'Click "Verify Age (Self QR)" above to unlock free inference.';
+      document.getElementById('demo-pay-btn').innerHTML = '';
       return;
     }
     var el = document.getElementById('demo-result');
@@ -458,9 +459,21 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     var js = document.getElementById('demo-json');
     el.style.display = 'block';
     document.getElementById('demo-pay-btn').innerHTML = '';
-    st.textContent = 'Calling ' + path + ' (Self verified — free)...';
-    st.style.color = '#C4A335';
-    js.textContent = '';
+
+    var isRebalance = path.indexOf('rebalance') >= 0;
+    if (isRebalance) {
+      st.textContent = 'Step 1/4: Reading wallet balances on Base...';
+      st.style.color = '#C4A335';
+      js.textContent = 'This takes ~30s — reading balances, getting prices, Venice AI analysis, and Uniswap routing...';
+      // Simulate progress updates
+      setTimeout(function() { if (st.textContent.indexOf('Step 1') >= 0) { st.textContent = 'Step 2/4: Getting token prices via Uniswap...'; } }, 5000);
+      setTimeout(function() { if (st.textContent.indexOf('Step 2') >= 0) { st.textContent = 'Step 3/4: Venice AI analyzing portfolio (Qwen3-235B, private)...'; } }, 10000);
+      setTimeout(function() { if (st.textContent.indexOf('Step 3') >= 0) { st.textContent = 'Step 4/4: Finding Uniswap + Across routes...'; } }, 20000);
+    } else {
+      st.textContent = 'Calling ' + path + ' (Self verified — free)...';
+      st.style.color = '#C4A335';
+    }
+    js.textContent = isRebalance ? js.textContent : '';
 
     try {
       var start = Date.now();
@@ -677,7 +690,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v5.3.0</span>
+    <span style="float:right;">v5.4.0</span>
   </div>
 </div>
 </body>
@@ -1014,13 +1027,15 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       const targetAddress = address || getAccount().address;
       const riskStrategy = strategy === 'aggressive' ? 'aggressive' : 'conservative';
 
-      // Step 1: Read wallet balances on Base
+      // Step 1: Read wallet balances on Base (parallel)
       const { getTokenBalance } = await import('../uniswap/client.js');
       const { TOKENS: T } = await import('../../config.js');
 
-      const ethBal = await getTokenBalance('0x0000000000000000000000000000000000000000' as any, targetAddress as any, 'base');
-      const usdcBal = await getTokenBalance(T.base.USDC as any, targetAddress as any, 'base');
-      const wethBal = await getTokenBalance(T.base.WETH as any, targetAddress as any, 'base');
+      const [ethBal, usdcBal, wethBal] = await Promise.all([
+        getTokenBalance('0x0000000000000000000000000000000000000000' as any, targetAddress as any, 'base'),
+        getTokenBalance(T.base.USDC as any, targetAddress as any, 'base'),
+        getTokenBalance(T.base.WETH as any, targetAddress as any, 'base'),
+      ]);
 
       const ethFormatted = (Number(ethBal) / 1e18).toFixed(6);
       const usdcFormatted = (Number(usdcBal) / 1e6).toFixed(2);
