@@ -574,7 +574,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v3.4.0</span>
+    <span style="float:right;">v3.5.0</span>
   </div>
 </div>
 </body>
@@ -768,18 +768,24 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
         ofac: false,
       });
 
-      const verifier = new SelfBackendVerifier(
-        'askjeev-age-verify',
-        `${baseUrl}/api/self-verify-proof`,
-        true,
-        AllIds,
-        configStore,
-        'uuid',
-      );
+      // Try mainnet first, fall back to testnet (mock passports)
+      let result: any = null;
+      for (const isMock of [false, true]) {
+        try {
+          const v = new SelfBackendVerifier(
+            'askjeev-age-verify',
+            `${baseUrl}/api/self-verify-proof`,
+            isMock,
+            AllIds,
+            configStore,
+            'uuid',
+          );
+          result = await v.verify(attestationId, proof, publicSignals, userContextData);
+          if (result.isValidDetails?.isValid) break;
+        } catch { /* try next */ }
+      }
 
-      const result = await verifier.verify(attestationId, proof, publicSignals, userContextData);
-
-      if (result.isValidDetails?.isValid) {
+      if (result?.isValidDetails?.isValid) {
         const userId = result.userData?.userIdentifier;
         if (userId) {
           selfVerifiedSessions.set(userId, { verified: true, age: 18, timestamp: Date.now() });
