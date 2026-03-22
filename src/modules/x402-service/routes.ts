@@ -107,8 +107,13 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   </div>
 </div>
 <div class="container">
-  <h1>AskJeev <span class="badge">LIVE</span></h1>
-  <p class="tagline">Your autonomous agent butler — earning, trading across 18 chains, generating images, and proving it's human-backed since 2026.</p>
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+    <img src="/logo-askjeeve.png" alt="AskJeev Butler" style="width:80px;height:80px;border:2px solid #C4A335;" />
+    <div>
+      <h1 style="margin-bottom:0;">AskJeev <span class="badge">LIVE</span></h1>
+      <p class="tagline" style="margin-bottom:0;">Your autonomous agent butler — earning, trading across 18 chains, generating images, and proving it's human-backed since 2026.</p>
+    </div>
+  </div>
 
   <div class="info-box">
     <p><strong>The problem:</strong> AI agents need to transact autonomously, but there's no trust infrastructure. How does one agent know another is real? How do you gate sensitive content by age without KYC?</p>
@@ -730,7 +735,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v6.2.0</span>
+    <span style="float:right;">v6.3.0</span>
   </div>
 </div>
 </body>
@@ -739,6 +744,19 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
   // Health check
   app.get('/health', (c) => c.json({ status: 'ok', agent: 'AskJeev', version: '0.1.0' }));
+
+  // Serve logo
+  app.get('/logo-askjeeve.png', async (c) => {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const imgPath = path.resolve(process.cwd(), 'public', 'logo-askjeeve.png');
+      const img = fs.readFileSync(imgPath);
+      c.header('Content-Type', 'image/png');
+      c.header('Cache-Control', 'public, max-age=86400');
+      return c.body(img);
+    } catch { return c.text('Not found', 404); }
+  });
 
   // Skill file for AI agents
   app.get('/skill.md', async (c) => {
