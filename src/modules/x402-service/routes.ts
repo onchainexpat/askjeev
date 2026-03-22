@@ -250,10 +250,11 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
 
     <div id="self-verified-section" style="display:none;margin-top:10px;">
       <p style="color:#C4A335;font-size:0.8em;margin:0 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Self Verified — unlocked (3 free calls/day):</p>
+      <textarea id="self-prompt" maxlength="500" rows="2" placeholder="Ask anything... (500 char max)" style="width:100%;padding:8px;margin-bottom:8px;font-family:Georgia,serif;font-size:0.9em;background:#FDFAF3;border:2px solid #C4A335;color:#333;resize:vertical;"></textarea>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button id="btn-free-ask" onclick="selfFreeCall('/api/demo/self-ask','POST',{prompt:'What makes AskJeev different from other AI agents?'})" title="Free inference via Bankr LLM — unlocked by Self verification." class="demo-btn-self-free self-glow">Ask Bankr (free)</button>
-        <button id="btn-free-analyze" onclick="selfFreeCall('/api/demo/self-analyze','POST',{prompt:'Analyze the current ETH/USDC market in one paragraph.'})" title="Free private analysis via Venice AI — unlocked by Self verification." class="demo-btn-self-free self-glow">Private Analyze (free)</button>
-        <button id="btn-free-image" onclick="selfFreeCall('/api/demo/self-image','POST',{prompt:'a robot butler in a retro 2000s internet cafe',model:'chroma',width:512,height:512})" title="Free uncensored image generation — unlocked by Self 18+ verification." class="demo-btn-self-free self-glow">Image Gen (free)</button>
+        <button id="btn-free-ask" onclick="selfFreeCall('/api/demo/self-ask','POST',{prompt:document.getElementById('self-prompt').value||'What is cross-chain arbitrage?'})" title="Free inference via Bankr LLM — unlocked by Self verification." class="demo-btn-self-free self-glow">Ask Bankr (free)</button>
+        <button id="btn-free-analyze" onclick="selfFreeCall('/api/demo/self-analyze','POST',{prompt:document.getElementById('self-prompt').value||'Analyze the current ETH market in one paragraph.'})" title="Free private analysis via Venice AI — unlocked by Self verification." class="demo-btn-self-free self-glow">Private Analyze (free)</button>
+        <button id="btn-free-image" onclick="selfFreeCall('/api/demo/self-image','POST',{prompt:document.getElementById('self-prompt').value||'a robot butler in a retro 2000s internet cafe',model:'chroma',width:512,height:512})" title="Free uncensored image generation — unlocked by Self 18+ verification." class="demo-btn-self-free self-glow">Image Gen (free)</button>
       </div>
     </div>
   </div>
@@ -662,7 +663,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v4.1.0</span>
+    <span style="float:right;">v4.2.0</span>
   </div>
 </div>
 </body>
