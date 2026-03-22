@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { getQuote, getLimitOrderQuote, getBridgeQuote } from '../uniswap/client.js';
-import { analyzePrivately, generateImage } from '../venice/client.js';
+import { analyzePrivately, generateImage, privateReason } from '../venice/client.js';
 import { chat } from '../bankr/client.js';
 import { getAccount } from '../../config.js';
 import { log } from '../identity/logger.js';
@@ -1060,9 +1060,14 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
         ? 'You are an aggressive DeFi portfolio strategist. Maximize exposure to volatile assets (ETH/WETH). Suggest high-growth allocations. Recommend specific swaps and any cross-chain opportunities.'
         : 'You are a conservative DeFi portfolio strategist. Prioritize capital preservation with stablecoins (USDC). Minimize volatility exposure. Suggest safe allocations with small ETH positions for gas.';
 
-      const analysis = await analyzePrivately(
-        `${strategyPrompt}\n\nAnalyze this Base wallet portfolio and provide a rebalancing plan:\n${JSON.stringify(portfolio, null, 2)}\n\nProvide:\n1. Recommended target allocation (percentages)\n2. Specific swaps needed (token, amount, direction)\n3. Brief rationale (2-3 sentences)\n\nBe concise and actionable.`,
+      const rebalanceAnalysis = await privateReason(
+        [
+          { role: 'system', content: strategyPrompt },
+          { role: 'user', content: `Analyze this Base wallet portfolio and provide a rebalancing plan:\n${JSON.stringify(portfolio, null, 2)}\n\nProvide:\n1. Recommended target allocation (percentages)\n2. Specific swaps needed (token, amount, direction)\n3. Brief rationale (2-3 sentences)\n\nBe concise and actionable.` },
+        ],
+        { model: 'qwen3-235b-a22b-instruct-2507' },
       );
+      const analysis = rebalanceAnalysis.choices[0].message.content;
 
       // Step 4: Get Uniswap quotes for suggested swaps
       const routes: any[] = [];
