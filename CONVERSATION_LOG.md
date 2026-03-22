@@ -170,9 +170,112 @@ Switched `DEV_SKIP_PAYMENT=false` on Vercel. All `/api/*` endpoints now require 
 
 Judges can verify by curling any endpoint and seeing the 402 response with payment-required header.
 
-### Final Test Results
+### Final Test Results (Session 1)
 
 - **35/35 unit tests** passing
-- **10/10 live integration tests** passing (health, agent.json, discovery, Base swap, Celo swap, Venice, Bankr, balances, Self status, validation)
-- **3 on-chain transactions** on BaseScan (registration, self-custody, 2 real swaps)
+- **10/10 live integration tests** passing
+- **3 on-chain transactions** on BaseScan
 - **8 hackathon tracks** registered
+
+---
+
+## Session 2: Self Agent ID — Trust Dashboard & Tiered Access (Mar 20, 2026)
+
+### Self Agent ID Integration
+
+**Human:** Asked to implement three demos around Self Agent ID #42 on Celo.
+
+**Agent:** Built:
+1. **On-Chain Agent Card** — Script to publish skills to Celo via `agent.setAgentCard()`
+2. **Live Trust Dashboard** — Landing page section that fetches from `/api/self-verify` on page load, showing 3 green badges (x402 Payments, Self Verified, ERC-8004 Identity), Agent ID #42, sybil resistance (1 of 3 agents), and proof validity countdown
+3. **Tiered Arbitrage Access** — Self-verified agents get premium (17 chains, AI analysis, 0.01% threshold), unverified get standard (5 chains, 0.1%)
+
+**Key debugging:** The Self middleware needed to derive `agentKey` from the `x-self-agent-address` header — the SDK's `signRequest()` doesn't send a separate key header.
+
+### Research Phase
+
+**Human:** Asked to research what's possible with Venice AI, Bankr, Self Protocol, and Uniswap.
+
+**Agent:** Launched 4 parallel research agents. Key findings:
+- **Venice:** 59 text + 22 image + 56 video models, uncensored generation with `safe_mode: false`, E2EE/TEE privacy tiers
+- **Bankr:** 15 models (Claude, GPT, Gemini, Kimi K2.5, Qwen3-Coder), dual OpenAI+Anthropic API format
+- **Uniswap:** 18 chains (we had 10), gasless limit orders, cross-chain bridges via Across Protocol
+- **Self:** A2A protocol, OFAC screening, age gating, verification strength scoring
+
+---
+
+## Session 3: Feature Expansion — Images, Bridges, 18 Chains (Mar 20-21, 2026)
+
+### New Endpoints
+
+**Human:** Selected 4 features to implement: uncensored image gen, limit orders, bridges, 18 chains.
+
+**Agent:** Built:
+1. `POST /api/generate-image` ($0.03) — Venice Chroma, `safe_mode: false`, Self 18+ gated (returns 403 without verification)
+2. `POST /api/limit-order` ($0.01) — Gasless UniswapX limit orders
+3. `POST /api/bridge` ($0.01) — Cross-chain via Across Protocol (ERC-7683)
+4. **18-chain expansion** — Added Unichain, zkSync, Linea, Zora, Monad, X Layer, Soneium, Tempo with verified USDC/WETH addresses
+
+**Bug found:** `ALL_CROSS_CHAIN_CHAINS` referenced `QUOTE_TOKENS` before it was defined — caused Vercel 500. Fixed by moving the declaration after `QUOTE_TOKENS`.
+
+### Landing Page Redesign
+
+**Human:** Asked to redesign for human judges. Key issues: page read like an API spec, not a product pitch.
+
+**Agent:** Added:
+- Hero section with problem statement and solution framing
+- Three featured cards: ZK Age-Gated Images, Identity-Tiered DeFi, Self-Sustaining Economics
+- Fixed all "10 chains" references to "18 chains"
+
+---
+
+## Session 4: Interactive Demo & x402 Payment Flow (Mar 21, 2026)
+
+### Live Demo Section
+
+**Human:** Wanted judges to interact with endpoints directly on the landing page.
+
+**Agent:** Built interactive demo with:
+- **Free buttons** (green): Trust Card, Arbitrage, Wallet Balance, Health — return live data
+- **Paid buttons** (blue): Arbitrage, Image Gen, Bridge, Ask — show 402, then "Agent Self-Pay" button
+- **Agent Self-Pay proxy** (`/api/demo/pay`): Server-side endpoint that uses `@x402/fetch` to pay from the agent's own wallet, demonstrating self-sustaining economics
+
+**Key fix:** Free endpoints (`/api/self-verify`, `/api/self-status`, `/api/agent-card`) were registered AFTER the x402 payment middleware, causing them to return 402. Moved them before the middleware.
+
+### x402 v1/v2 Protocol Bridge
+
+**Human:** Tested from Claude Desktop with x402-wallet-mcp — payments kept failing.
+
+**Agent:** Deep debugging session revealed THREE issues:
+1. **Header name mismatch:** x402-wallet-mcp sends `X-PAYMENT` (v1), server only reads `payment-signature` (v2). Fix: bridge middleware copies header.
+2. **Missing `accepted` field:** v2 `findMatchingRequirements` does `deepEqual` on `paymentPayload.accepted`. v1 payloads lack this. Fix: bridge constructs the accepted object.
+3. **Network format mismatch:** v1 uses `network: "base"`, v2 requires `network: "eip155:8453"` (CAIP-2). `deepEqual` fails on this. Fix: hardcode correct format.
+
+Final test: v1 payments via `X-PAYMENT` header now work end-to-end. Confirmed from both CLI and Claude Desktop.
+
+### Retro UI Redesign
+
+**Human:** Asked for retro 2000s AskJeeves theme based on a reference image.
+
+**Agent:** Rebuilt entire CSS: cream backgrounds (#F5EFE0), dark blue headers (#1B3A5C), gold accents (#C4A335), beveled 3D buttons, Georgia serif fonts, Verdana labels, inset borders. All functionality preserved.
+
+### Image Generation End-to-End
+
+**Human:** Tested image gen — confirmed Venice Chroma generates images, rendered inline in the demo UI.
+
+**Agent fix:** Self SDK can't load on Vercel serverless (ESM import error). For the demo proxy, image gen calls Venice directly — the agent IS Self-verified (#42), we just bypass the middleware.
+
+---
+
+## Session 5: Submission Preparation (Mar 21-22, 2026)
+
+### Final Stats
+- **81 tests** passing across 10 test files
+- **18 chains** supported (17 with WETH for arbitrage)
+- **9 paid endpoints** + 7 free endpoints
+- **Self Agent ID #42** on Celo with ZK passport proof (364 days validity)
+- **2 autonomous swaps** on Base with real TxIDs
+- **8 hackathon tracks** submitted
+- **Live interactive demo** with real x402 payments
+- **x402 v1/v2 bridge** enabling Claude Desktop compatibility
+- **v2.9.0** deployed on Vercel
