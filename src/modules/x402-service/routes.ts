@@ -248,19 +248,19 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       <button onclick="demoCall('/api/ask','POST',{prompt:'What is cross-chain arbitrage in 2 sentences?'})" title="Bankr LLM Gateway — 15 models, USDC-funded inference." class="demo-btn-paid">Ask Bankr ($0.01)</button>
     </div>
 
-    <div id="self-verified-section" style="display:none;margin-top:10px;">
-      <p style="color:#C4A335;font-size:0.8em;margin:0 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Self Verified — unlocked (3 free calls/day):</p>
-      <textarea id="self-prompt" maxlength="500" rows="2" placeholder="Ask anything... (500 char max)" style="width:100%;padding:8px;margin-bottom:8px;font-family:Georgia,serif;font-size:0.9em;background:#FDFAF3;border:2px solid #C4A335;color:#333;resize:vertical;"></textarea>
+    <div id="self-verified-section" style="margin-top:10px;">
+      <p style="color:#C4A335;font-size:0.8em;margin:0 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Self Verified — free inference (3 calls/day) <span id="self-lock-label" style="color:#888;">— verify above to unlock</span></p>
+      <textarea id="self-prompt" maxlength="500" rows="2" placeholder="Ask anything... (500 char max)" style="width:100%;padding:8px;margin-bottom:8px;font-family:Georgia,serif;font-size:0.9em;background:#FDFAF3;border:2px solid #C4A335;color:#333;resize:vertical;" disabled></textarea>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-        <button id="btn-free-ask" onclick="selfFreeCall('/api/demo/self-ask','POST',{prompt:document.getElementById('self-prompt').value||'What is cross-chain arbitrage?'})" title="Free inference via Bankr LLM — unlocked by Self verification." class="demo-btn-self-free self-glow">Ask Bankr (free)</button>
-        <button id="btn-free-analyze" onclick="selfFreeCall('/api/demo/self-analyze','POST',{prompt:document.getElementById('self-prompt').value||'Analyze the current ETH market in one paragraph.'})" title="Free private analysis via Venice AI — unlocked by Self verification." class="demo-btn-self-free self-glow">Private Analyze (free)</button>
-        <button id="btn-free-image" onclick="selfFreeCall('/api/demo/self-image','POST',{prompt:document.getElementById('self-prompt').value||'a robot butler in a retro 2000s internet cafe',model:'chroma',width:512,height:512})" title="Free uncensored image generation — unlocked by Self 18+ verification." class="demo-btn-self-free self-glow">Image Gen (free)</button>
+        <button id="btn-free-ask" onclick="selfFreeCall('/api/demo/self-ask','POST',{prompt:document.getElementById('self-prompt').value||'What is cross-chain arbitrage?'})" title="Free inference via Bankr LLM — verify with Self to unlock." class="demo-btn-paid" style="opacity:0.5;cursor:not-allowed;" disabled>Ask Bankr (locked)</button>
+        <button id="btn-free-analyze" onclick="selfFreeCall('/api/demo/self-analyze','POST',{prompt:document.getElementById('self-prompt').value||'Analyze the current ETH market in one paragraph.'})" title="Free private analysis via Venice AI — verify with Self to unlock." class="demo-btn-paid" style="opacity:0.5;cursor:not-allowed;" disabled>Private Analyze (locked)</button>
+        <button id="btn-free-image" onclick="selfFreeCall('/api/demo/self-image','POST',{prompt:document.getElementById('self-prompt').value||'a robot butler in a retro 2000s internet cafe',model:'chroma',width:512,height:512})" title="Free uncensored image generation — verify with Self to unlock." class="demo-btn-paid" style="opacity:0.5;cursor:not-allowed;" disabled>Image Gen (locked)</button>
       </div>
       <p style="color:#C4A335;font-size:0.8em;margin:0 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Private Portfolio Rebalance Planner:</p>
-      <input id="rebalance-addr" maxlength="42" placeholder="Wallet address (0x... or leave blank for agent wallet)" style="width:100%;padding:6px 8px;margin-bottom:6px;font-family:'Courier New',monospace;font-size:0.85em;background:#FDFAF3;border:2px solid #C4A335;color:#333;" />
+      <input id="rebalance-addr" maxlength="42" placeholder="Wallet address (0x... or leave blank for agent wallet)" style="width:100%;padding:6px 8px;margin-bottom:6px;font-family:'Courier New',monospace;font-size:0.85em;background:#FDFAF3;border:2px solid #C4A335;color:#333;" disabled />
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button onclick="selfFreeCall('/api/demo/self-rebalance','POST',{address:document.getElementById('rebalance-addr').value,strategy:'conservative'})" title="Venice privately analyzes the wallet and suggests conservative swaps (preserve capital, favor stablecoins)." class="demo-btn-self-free self-glow">Rebalance: Conservative (free)</button>
-        <button onclick="selfFreeCall('/api/demo/self-rebalance','POST',{address:document.getElementById('rebalance-addr').value,strategy:'aggressive'})" title="Venice privately analyzes the wallet and suggests aggressive swaps (maximize ETH exposure, growth-oriented)." class="demo-btn-self-free self-glow">Rebalance: Aggressive (free)</button>
+        <button id="btn-rebal-cons" onclick="selfFreeCall('/api/demo/self-rebalance','POST',{address:document.getElementById('rebalance-addr').value,strategy:'conservative'})" title="Venice privately analyzes the wallet and suggests conservative swaps." class="demo-btn-paid" style="opacity:0.5;cursor:not-allowed;" disabled>Rebalance: Conservative (locked)</button>
+        <button id="btn-rebal-aggr" onclick="selfFreeCall('/api/demo/self-rebalance','POST',{address:document.getElementById('rebalance-addr').value,strategy:'aggressive'})" title="Venice privately analyzes the wallet and suggests aggressive swaps." class="demo-btn-paid" style="opacity:0.5;cursor:not-allowed;" disabled>Rebalance: Aggressive (locked)</button>
       </div>
     </div>
   </div>
@@ -421,8 +421,21 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
             verifyBtn.onclick = null;
             verifyBtn.style.cursor = 'default';
 
-            // Show self-verified free buttons
-            document.getElementById('self-verified-section').style.display = 'block';
+            // Unlock self-verified free buttons
+            document.getElementById('self-lock-label').textContent = '';
+            document.getElementById('self-prompt').disabled = false;
+            document.getElementById('rebalance-addr').disabled = false;
+
+            var freeButtons = ['btn-free-ask','btn-free-analyze','btn-free-image','btn-rebal-cons','btn-rebal-aggr'];
+            var freeLabels = ['Ask Bankr (free)','Private Analyze (free)','Image Gen (free)','Rebalance: Conservative (free)','Rebalance: Aggressive (free)'];
+            for (var i = 0; i < freeButtons.length; i++) {
+              var btn = document.getElementById(freeButtons[i]);
+              btn.disabled = false;
+              btn.className = 'demo-btn-self-free self-glow';
+              btn.style.opacity = '1';
+              btn.style.cursor = 'pointer';
+              btn.textContent = freeLabels[i];
+            }
 
             // Add glow to paid buttons that benefit from Self verification
             document.getElementById('btn-arb').classList.add('self-glow');
@@ -669,7 +682,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v5.0.0</span>
+    <span style="float:right;">v5.1.0</span>
   </div>
 </div>
 </body>
