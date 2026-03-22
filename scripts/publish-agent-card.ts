@@ -8,7 +8,20 @@
  * Requires: SELF_AGENT_PRIVATE_KEY in .env
  */
 
-import 'dotenv/config';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+
+// Load .env manually (no dotenv dependency)
+try {
+  const envPath = resolve(import.meta.dirname || '.', '..', '.env');
+  const envContent = readFileSync(envPath, 'utf-8');
+  for (const line of envContent.split('\n')) {
+    const match = line.match(/^([^#=]+)=(.*)$/);
+    if (match && !process.env[match[1].trim()]) {
+      process.env[match[1].trim()] = match[2].trim();
+    }
+  }
+} catch { /* .env not found, rely on existing env vars */ }
 
 async function main() {
   const privateKey = process.env.SELF_AGENT_PRIVATE_KEY;

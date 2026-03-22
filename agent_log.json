@@ -152,5 +152,1375 @@
       ]
     },
     "success": true
+  },
+  {
+    "timestamp": "2026-03-20T05:57:31.560Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Base"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:31.569Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 1,
+      "minSpreadPercent": 0,
+      "mode": "cross-chain",
+      "chains": [
+        "ethereum",
+        "base"
+      ]
+    },
+    "output": {
+      "opportunitiesFound": 0,
+      "topSpread": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T05:57:31.571Z",
+    "action": "service_arbitrage",
+    "tool": "api/arbitrage",
+    "input": {
+      "minSpreadPercent": 0,
+      "earned": "$0.01"
+    },
+    "output": {
+      "opportunitiesFound": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.606Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Base"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.612Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Arbitrum"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.613Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Polygon"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.614Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.615Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Arbitrum"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.615Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Polygon"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.616Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.619Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Arbitrum vs Polygon"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.620Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Arbitrum vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.621Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Polygon vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.621Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 10,
+      "minSpreadPercent": 0,
+      "mode": "cross-chain"
+    },
+    "output": {
+      "opportunitiesFound": 0,
+      "topSpread": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.621Z",
+    "action": "service_arbitrage",
+    "tool": "api/arbitrage",
+    "input": {
+      "minSpreadPercent": 0,
+      "earned": "$0.01"
+    },
+    "output": {
+      "opportunitiesFound": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.889Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "cUSD/USDC peg (Celo)"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.890Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "USDT/USDC peg (Celo)"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.894Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "cUSD vs USDT (Celo)"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.895Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 3,
+      "minSpreadPercent": 0,
+      "mode": "stablecoin"
+    },
+    "output": {
+      "opportunitiesFound": 0,
+      "topSpread": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T05:57:45.897Z",
+    "action": "service_arbitrage",
+    "tool": "api/arbitrage",
+    "input": {
+      "minSpreadPercent": 0,
+      "earned": "$0.01"
+    },
+    "output": {
+      "opportunitiesFound": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.422Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "cUSD/USDC peg (Celo)"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.429Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "USDT/USDC peg (Celo)"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.430Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "cUSD vs USDT (Celo)"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.430Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Base"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.433Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Arbitrum"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.434Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Polygon"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.434Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.435Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Arbitrum"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.436Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Polygon"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.436Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.437Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Arbitrum vs Polygon"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.438Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Arbitrum vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.439Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Polygon vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.439Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 13,
+      "minSpreadPercent": 0,
+      "mode": "all"
+    },
+    "output": {
+      "opportunitiesFound": 0,
+      "topSpread": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T05:57:47.440Z",
+    "action": "service_arbitrage",
+    "tool": "api/arbitrage",
+    "input": {
+      "minSpreadPercent": 0,
+      "earned": "$0.01"
+    },
+    "output": {
+      "opportunitiesFound": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T05:59:45.787Z",
+    "action": "service_swap_quote",
+    "tool": "api/swap-quote",
+    "input": {
+      "tokenIn": "0x0000000000000000000000000000000000000000",
+      "tokenOut": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "amount": "1000000000000000",
+      "chain": "base"
+    },
+    "output": {
+      "routing": "CLASSIC",
+      "chain": "base",
+      "earned": "$0.005"
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T05:59:46.781Z",
+    "action": "service_swap_quote",
+    "tool": "api/swap-quote",
+    "input": {
+      "tokenIn": "0x0000000000000000000000000000000000000000",
+      "tokenOut": "0x765DE816845861e75A25fCA122bb6898B8B1282a",
+      "amount": "1000000000000000000",
+      "chain": "celo"
+    },
+    "output": {
+      "routing": "CLASSIC",
+      "chain": "celo",
+      "earned": "$0.005"
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:01:27.263Z",
+    "action": "service_swap_quote",
+    "tool": "api/swap-quote",
+    "input": {
+      "tokenIn": "0x0000000000000000000000000000000000000000",
+      "tokenOut": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "amount": "1000000000000000",
+      "chain": "base"
+    },
+    "output": {
+      "routing": "CLASSIC",
+      "chain": "base",
+      "earned": "$0.005"
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:01:28.239Z",
+    "action": "service_swap_quote",
+    "tool": "api/swap-quote",
+    "input": {
+      "tokenIn": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "tokenOut": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "amount": "1000000000000000",
+      "chain": "ethereum"
+    },
+    "output": {
+      "routing": "CLASSIC",
+      "chain": "ethereum",
+      "earned": "$0.005"
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:01:29.328Z",
+    "action": "service_swap_quote",
+    "tool": "api/swap-quote",
+    "input": {
+      "tokenIn": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+      "tokenOut": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      "amount": "1000000000000000",
+      "chain": "arbitrum"
+    },
+    "output": {
+      "routing": "CLASSIC",
+      "chain": "arbitrum",
+      "earned": "$0.005"
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:01:30.286Z",
+    "action": "service_swap_quote",
+    "tool": "api/swap-quote",
+    "input": {
+      "tokenIn": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+      "tokenOut": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+      "amount": "1000000000000000",
+      "chain": "polygon"
+    },
+    "output": {
+      "routing": "CLASSIC",
+      "chain": "polygon",
+      "earned": "$0.005"
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:01:37.960Z",
+    "action": "service_swap_quote",
+    "tool": "api/swap-quote",
+    "input": {
+      "tokenIn": "0x0000000000000000000000000000000000000000",
+      "tokenOut": "0x765DE816845861e75A25fCA122bb6898B8B1282a",
+      "amount": "1000000000000000",
+      "chain": "celo"
+    },
+    "output": {
+      "routing": "CLASSIC",
+      "chain": "celo",
+      "earned": "$0.005"
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:02:02.926Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 10,
+      "minSpreadPercent": 0,
+      "mode": "cross-chain"
+    },
+    "output": {
+      "opportunitiesFound": 10,
+      "topSpread": 0.03
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:02:02.934Z",
+    "action": "service_arbitrage",
+    "tool": "api/arbitrage",
+    "input": {
+      "minSpreadPercent": 0,
+      "earned": "$0.01"
+    },
+    "output": {
+      "opportunitiesFound": 10
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:02:10.900Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 3,
+      "minSpreadPercent": 0,
+      "mode": "stablecoin"
+    },
+    "output": {
+      "opportunitiesFound": 3,
+      "topSpread": 0.07
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:02:10.903Z",
+    "action": "service_arbitrage",
+    "tool": "api/arbitrage",
+    "input": {
+      "minSpreadPercent": 0,
+      "earned": "$0.01"
+    },
+    "output": {
+      "opportunitiesFound": 3
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:02:37.277Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 13,
+      "minSpreadPercent": 0,
+      "mode": "all"
+    },
+    "output": {
+      "opportunitiesFound": 13,
+      "topSpread": 0.07
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:02:37.285Z",
+    "action": "service_arbitrage",
+    "tool": "api/arbitrage",
+    "input": {
+      "minSpreadPercent": 0,
+      "earned": "$0.01"
+    },
+    "output": {
+      "opportunitiesFound": 13
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:03:15.891Z",
+    "action": "service_private_analyze",
+    "tool": "api/private-analyze",
+    "input": {
+      "promptLength": 127,
+      "hasContext": true,
+      "earned": "$0.02"
+    },
+    "output": {
+      "responseLength": 2262
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:03:29.852Z",
+    "action": "service_ask",
+    "tool": "api/ask",
+    "input": {
+      "promptLength": 116,
+      "model": "gemini-2.5-flash",
+      "earned": "$0.01"
+    },
+    "output": {
+      "tokensUsed": 413
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:03:35.549Z",
+    "action": "balances_checked",
+    "tool": "api/balances",
+    "input": {
+      "wallet": "0x6E5adF9C48203D239704c16268394adf0A21C6D0"
+    },
+    "output": {
+      "chains": [
+        "base",
+        "celo"
+      ]
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:03:50.439Z",
+    "action": "discover_services",
+    "tool": "discovery",
+    "input": {
+      "query": "swap trading DeFi arbitrage"
+    },
+    "output": {
+      "totalFound": 0,
+      "returned": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:03:50.441Z",
+    "action": "service_discover",
+    "tool": "api/discover",
+    "input": {
+      "query": "swap trading DeFi arbitrage",
+      "earned": "$0.01"
+    },
+    "output": {
+      "totalFound": 0,
+      "returned": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:04:15.509Z",
+    "action": "rebalance_complete",
+    "tool": "rebalance",
+    "input": {
+      "targetCount": 2,
+      "dryRun": true,
+      "swapCount": 1
+    },
+    "output": {
+      "totalValueUSD": 3.990768589022364,
+      "transactionCount": 0,
+      "executed": false
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T06:04:15.510Z",
+    "action": "service_rebalance",
+    "tool": "api/rebalance",
+    "input": {
+      "targetCount": 2,
+      "dryRun": true,
+      "earned": "$0.02"
+    },
+    "output": {
+      "swapCount": 1,
+      "executed": false,
+      "transactions": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T11:50:40.269Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 10,
+      "minSpreadPercent": 0,
+      "mode": "cross-chain"
+    },
+    "output": {
+      "opportunitiesFound": 10,
+      "topSpread": 0.04
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T11:50:40.276Z",
+    "action": "service_arbitrage",
+    "tool": "api/arbitrage",
+    "input": {
+      "minSpreadPercent": 0,
+      "earned": "$0.01"
+    },
+    "output": {
+      "opportunitiesFound": 10
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T12:39:47.602Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 3,
+      "minSpreadPercent": 99,
+      "mode": "stablecoin"
+    },
+    "output": {
+      "opportunitiesFound": 0,
+      "topSpread": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T12:39:47.611Z",
+    "action": "service_arbitrage",
+    "tool": "api/arbitrage",
+    "input": {
+      "minSpreadPercent": 99,
+      "earned": "$0.01"
+    },
+    "output": {
+      "opportunitiesFound": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T13:08:06.388Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 3,
+      "minSpreadPercent": 99,
+      "mode": "stablecoin"
+    },
+    "output": {
+      "opportunitiesFound": 0,
+      "topSpread": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-20T13:08:06.397Z",
+    "action": "service_arbitrage",
+    "tool": "api/arbitrage",
+    "input": {
+      "minSpreadPercent": 99,
+      "earned": "$0.01"
+    },
+    "output": {
+      "opportunitiesFound": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-21T03:54:18.124Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Base"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:18.133Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Unichain"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:18.135Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs zkSync"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:18.136Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Linea"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:18.139Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Unichain"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:18.141Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs zkSync"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:18.142Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Linea"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:18.143Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Unichain vs zkSync"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:18.145Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Unichain vs Linea"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:18.146Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: zkSync vs Linea"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:18.147Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 10,
+      "minSpreadPercent": 0.01,
+      "mode": "cross-chain",
+      "chains": [
+        "ethereum",
+        "base",
+        "unichain",
+        "zksync",
+        "linea"
+      ]
+    },
+    "output": {
+      "opportunitiesFound": 0,
+      "topSpread": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.225Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Base"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.228Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Arbitrum"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.233Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Unichain"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.233Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs zkSync"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.234Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Linea"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.235Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Polygon"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.236Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Ethereum vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.237Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Arbitrum"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.237Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Unichain"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.238Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs zkSync"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.239Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Linea"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.240Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Polygon"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.241Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Base vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.241Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Arbitrum vs Unichain"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.242Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Arbitrum vs zkSync"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.243Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Arbitrum vs Linea"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.244Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Arbitrum vs Polygon"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.245Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Arbitrum vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.245Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Unichain vs zkSync"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.246Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Unichain vs Linea"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.247Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Unichain vs Polygon"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.248Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Unichain vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.249Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: zkSync vs Linea"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.249Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: zkSync vs Polygon"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.250Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: zkSync vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.251Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Linea vs Polygon"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.252Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Linea vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.253Z",
+    "action": "arbitrage_quote_failed",
+    "tool": "arbitrage",
+    "input": {
+      "pair": "WETH price: Polygon vs Optimism"
+    },
+    "output": {
+      "error": "Quote returned null"
+    },
+    "success": false
+  },
+  {
+    "timestamp": "2026-03-21T03:54:30.254Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 28,
+      "minSpreadPercent": 0,
+      "mode": "cross-chain",
+      "chains": [
+        "ethereum",
+        "base",
+        "arbitrum",
+        "unichain",
+        "zksync",
+        "linea",
+        "polygon",
+        "optimism"
+      ]
+    },
+    "output": {
+      "opportunitiesFound": 0,
+      "topSpread": 0
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-21T03:55:22.431Z",
+    "action": "detect_arbitrage",
+    "tool": "arbitrage",
+    "input": {
+      "pairsChecked": 15,
+      "minSpreadPercent": 0,
+      "mode": "cross-chain",
+      "chains": [
+        "ethereum",
+        "base",
+        "unichain",
+        "zksync",
+        "linea",
+        "arbitrum"
+      ]
+    },
+    "output": {
+      "opportunitiesFound": 15,
+      "topSpread": 0.46
+    },
+    "success": true
+  },
+  {
+    "timestamp": "2026-03-21T04:02:07.654Z",
+    "action": "service_generate_image",
+    "tool": "api/generate-image",
+    "input": {
+      "promptLength": 26,
+      "model": "chroma",
+      "selfVerified": true,
+      "earned": "$0.03"
+    },
+    "output": {
+      "imagesGenerated": 1
+    },
+    "success": true
   }
 ]

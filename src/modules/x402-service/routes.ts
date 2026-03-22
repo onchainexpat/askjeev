@@ -231,6 +231,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     <div style="display:flex;gap:6px;flex-wrap:wrap;">
       <button onclick="demoCall('/api/arbitrage','POST',{mode:'cross-chain',chains:['ethereum','base','unichain','zksync','linea'],minSpreadPercent:0})" title="Full 5-chain WETH arbitrage scan with Venice AI analysis." class="demo-btn-paid">Full Arbitrage ($0.01)</button>
       <button onclick="demoCall('/api/generate-image','POST',{prompt:'a cyberpunk robot butler serving cocktails in a neon Tokyo alley',model:'chroma',width:512,height:512})" title="Uncensored AI image generation. Requires Self Agent ID (18+ ZK passport proof)." class="demo-btn-gold">Image Gen — Self 18+ ($0.03)</button>
+      <button onclick="startSelfVerify()" title="Scan QR with Self app to prove you are 18+ via ZK passport proof. No KYC, no data leak." class="demo-btn-gold">Verify Age (Self QR)</button>
       <button onclick="demoCall('/api/bridge','POST',{tokenIn:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',tokenOut:'0xaf88d065e77c8cC2239327C5EDb3A432268e5831',amount:'1000000',chainIn:'base',chainOut:'arbitrum'})" title="Move 1 USDC from Base to Arbitrum via Across Protocol." class="demo-btn-paid">Bridge Base-Arb ($0.01)</button>
       <button onclick="demoCall('/api/ask','POST',{prompt:'What is cross-chain arbitrage in 2 sentences?'})" title="Bankr LLM Gateway — 15 models, USDC-funded inference." class="demo-btn-paid">Ask Bankr ($0.01)</button>
     </div>
@@ -330,6 +331,65 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
     } catch(e) {
       st.style.color = '#ef4444';
       st.textContent = 'Error: ' + (e.message || 'Request failed');
+    }
+  }
+
+  var selfVerifiedUserId = null;
+
+  async function startSelfVerify() {
+    var el = document.getElementById('demo-result');
+    var st = document.getElementById('demo-status');
+    var js = document.getElementById('demo-json');
+    var payBtn = document.getElementById('demo-pay-btn');
+    el.style.display = 'block';
+    st.textContent = 'Generating Self verification QR code...';
+    st.style.color = '#f59e0b';
+    js.textContent = '';
+    payBtn.innerHTML = '';
+
+    try {
+      var r = await fetch('/api/self-qr');
+      var data = await r.json();
+      if (data.error) { st.textContent = 'Error: ' + data.error; st.style.color = '#ef4444'; return; }
+
+      st.textContent = 'Scan this QR code with the Self app on your phone to prove age >= 18';
+      st.style.color = '#f59e0b';
+      js.textContent = JSON.stringify({ status: 'Waiting for QR scan...', userId: data.userId, requirement: 'minimumAge: 18', method: 'ZK passport proof (zero-knowledge, no personal data shared)' }, null, 2);
+
+      // Show QR code
+      var qrImg = document.createElement('img');
+      qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(data.qrUrl);
+      qrImg.style.cssText = 'display:block;margin:12px auto;border:4px solid #C4A335;';
+      qrImg.alt = 'Self verification QR code';
+      payBtn.appendChild(qrImg);
+
+      var statusP = document.createElement('p');
+      statusP.style.cssText = 'text-align:center;color:#888;font-size:0.85em;font-family:Verdana,sans-serif;margin-top:8px;';
+      statusP.textContent = 'Waiting for scan...';
+      payBtn.appendChild(statusP);
+
+      // Poll for verification
+      var pollCount = 0;
+      var pollInterval = setInterval(async function() {
+        pollCount++;
+        if (pollCount > 90) { clearInterval(pollInterval); statusP.textContent = 'Verification timed out (3 min)'; return; }
+        try {
+          var sr = await fetch('/api/self-qr-status?userId=' + data.userId);
+          var sd = await sr.json();
+          if (sd.verified) {
+            clearInterval(pollInterval);
+            selfVerifiedUserId = data.userId;
+            st.textContent = 'Age verified! You are 18+ (ZK passport proof)';
+            st.style.color = '#4ade80';
+            statusP.textContent = 'Verified! You can now generate images.';
+            statusP.style.color = '#4ade80';
+            js.textContent = JSON.stringify({ status: 'VERIFIED', age: '18+', method: 'ZK passport proof via Self Protocol', userId: data.userId, note: 'You can now click Image Gen to generate uncensored images.' }, null, 2);
+          }
+        } catch(e) {}
+      }, 2000);
+    } catch(e) {
+      st.style.color = '#ef4444';
+      st.textContent = 'Error: ' + (e.message || 'Failed to generate QR');
     }
   }
 
@@ -514,7 +574,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v2.9.0</span>
+    <span style="float:right;">v3.0.0</span>
   </div>
 </div>
 </body>
@@ -652,6 +712,89 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       bridgeApplied: !!xPayment && !!paymentSig,
       body,
     });
+  });
+
+  // Self Protocol QR age verification — in-memory session store
+  const selfVerifiedSessions = new Map<string, { verified: boolean; age?: number; timestamp: number }>();
+
+  // Generate QR code data for Self age verification
+  app.get('/api/self-qr', async (c) => {
+    try {
+      const { SelfAppBuilder } = await import('@selfxyz/sdk-common');
+      const { v4: uuidv4 } = await import('uuid');
+
+      const userId = uuidv4();
+      const baseUrl = deployedUrl || `https://${process.env.VERCEL_URL || 'localhost:3402'}`;
+
+      const selfApp = new SelfAppBuilder({
+        appName: 'AskJeev',
+        scope: 'askjeev-age-verify',
+        endpoint: `${baseUrl}/api/self-verify-proof`,
+        endpointType: 'https',
+        userId,
+        disclosures: { minimumAge: 18 },
+      } as any).build();
+
+      // Store pending session
+      selfVerifiedSessions.set(userId, { verified: false, timestamp: Date.now() });
+
+      // Clean old sessions (>15 min)
+      for (const [k, v] of selfVerifiedSessions) {
+        if (Date.now() - v.timestamp > 15 * 60 * 1000) selfVerifiedSessions.delete(k);
+      }
+
+      return c.json({ userId, selfApp, qrUrl: `https://redirect.self.xyz?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}` });
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
+  // Receive ZK proof from Self app after QR scan
+  app.post('/api/self-verify-proof', async (c) => {
+    try {
+      const body = await c.req.json();
+      const { attestationId, proof, publicSignals, userContextData } = body;
+
+      if (!proof || !publicSignals || !attestationId) {
+        return c.json({ status: 'error', result: false, reason: 'Missing proof fields' }, 400);
+      }
+
+      const { SelfBackendVerifier, AllIds } = await import('@selfxyz/core');
+      const baseUrl = deployedUrl || `https://${process.env.VERCEL_URL || 'localhost:3402'}`;
+
+      const verifier = new SelfBackendVerifier(
+        'askjeev-age-verify',
+        `${baseUrl}/api/self-verify-proof`,
+        false,
+        AllIds,
+        undefined as any,
+        'uuid',
+      );
+
+      const result = await verifier.verify(attestationId, proof, publicSignals, userContextData);
+
+      if (result.isValidDetails?.isValid) {
+        const userId = result.userData?.userIdentifier;
+        if (userId) {
+          selfVerifiedSessions.set(userId, { verified: true, age: 18, timestamp: Date.now() });
+        }
+        return c.json({ status: 'success', result: true, userId });
+      }
+
+      return c.json({ status: 'error', result: false, reason: 'Proof invalid' });
+    } catch (err: any) {
+      console.error('Self verify proof error:', err.message);
+      return c.json({ status: 'error', result: false, reason: err.message }, 500);
+    }
+  });
+
+  // Poll verification status
+  app.get('/api/self-qr-status', (c) => {
+    const userId = c.req.query('userId');
+    if (!userId) return c.json({ error: 'userId required' }, 400);
+    const session = selfVerifiedSessions.get(userId);
+    if (!session) return c.json({ verified: false, status: 'unknown' });
+    return c.json({ verified: session.verified, status: session.verified ? 'verified' : 'pending' });
   });
 
   // Demo proxy: agent pays for its own services via x402 (self-sustaining economics demo)
