@@ -258,7 +258,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       </div>
       <p style="color:#C4A335;font-size:0.8em;margin:0 0 6px;font-family:Verdana,sans-serif;font-weight:bold;">Private Portfolio Rebalance Planner:</p>
       <input id="rebalance-addr" maxlength="42" value="0x6E5adF9C48203D239704c16268394adf0A21C6D0" placeholder="Wallet address on Base" style="width:100%;padding:6px 8px;margin-bottom:6px;font-family:'Courier New',monospace;font-size:0.85em;background:#FDFAF3;border:2px solid #C4A335;color:#333;" />
-      <p style="color:#888;font-size:0.75em;margin:-4px 0 6px;font-family:Verdana,sans-serif;">Reads ETH, WETH, USDC on Ethereum + Base. Venice privately analyzes + Uniswap routes the swaps.</p>
+      <p style="color:#888;font-size:0.75em;margin:-4px 0 6px;font-family:Verdana,sans-serif;">Reads full portfolio via Zerion (all chains, all tokens). Venice privately analyzes + suggests Uniswap/Across routes.</p>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         <button id="btn-rebal-cons" onclick="selfFreeCall('/api/demo/self-rebalance','POST',{address:document.getElementById('rebalance-addr').value,strategy:'conservative'})" title="Venice privately analyzes the wallet and suggests conservative swaps." class="demo-btn-gold">Rebalance: Conservative (verify to unlock)</button>
         <button id="btn-rebal-aggr" onclick="selfFreeCall('/api/demo/self-rebalance','POST',{address:document.getElementById('rebalance-addr').value,strategy:'aggressive'})" title="Venice privately analyzes the wallet and suggests aggressive swaps." class="demo-btn-gold">Rebalance: Aggressive (verify to unlock)</button>
@@ -691,7 +691,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v5.8.0</span>
+    <span style="float:right;">v6.0.0</span>
   </div>
 </div>
 </body>
@@ -1028,97 +1028,48 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       const targetAddress = address || getAccount().address;
       const riskStrategy = strategy === 'aggressive' ? 'aggressive' : 'conservative';
 
-      // Step 1: Read wallet balances on Base + Ethereum L1 (parallel)
-      const { getTokenBalance } = await import('../uniswap/client.js');
-      const { TOKENS: T, QUOTE_TOKENS: QT } = await import('../../config.js');
-      const { createPublicClient, http } = await import('viem');
-      const { mainnet } = await import('viem/chains');
+      // Step 1: Read full portfolio via Zerion API (all chains, all tokens)
+      const zerionKey = 'zk_169f8e062aa84389bc6cff985dbe931c';
+      const zerionAuth = 'Basic ' + btoa(zerionKey + ':');
 
-      const ethL1Client = createPublicClient({
-        chain: mainnet,
-        transport: http('https://ethereum.publicnode.com', { timeout: 15000 }),
-      });
-      const addr = targetAddress as `0x${string}`;
-      const erc20BalAbi = [{ name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'account', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] }] as const;
+      const zerionRes = await fetch(
+        `https://api.zerion.io/v1/wallets/${targetAddress}/positions/?filter[positions]=only_simple&currency=usd&sort=value`,
+        { headers: { 'Authorization': zerionAuth, 'accept': 'application/json' } },
+      );
+      const zerionData = await zerionRes.json();
+      const positions = (zerionData.data || []).slice(0, 20); // Top 20 by value
 
-      // Well-known tokens on Ethereum L1 to check
-      const l1Tokens: Record<string, { address: `0x${string}`; decimals: number }> = {
-        PEPE: { address: '0x6982508145454Ce325dDbE47a25d4ec3d2311933', decimals: 18 },
-        SHIB: { address: '0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE', decimals: 18 },
-        UNI: { address: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984', decimals: 18 },
-        LINK: { address: '0x514910771AF9Ca656af840dff83E8264EcF986CA', decimals: 18 },
-        stETH: { address: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84', decimals: 18 },
-      };
+      let totalUsd = 0;
+      const holdings: { token: string; symbol: string; balance: string; valueUSD: number; percent: number }[] = [];
 
-      const readL1Token = (token: { address: `0x${string}`; decimals: number }) =>
-        ethL1Client.readContract({ address: token.address, abi: erc20BalAbi, functionName: 'balanceOf', args: [addr] }).then(v => String(v)).catch(() => '0');
+      for (const p of positions) {
+        const attr = p.attributes;
+        const symbol = attr.fungible_info?.symbol || '?';
+        const name = attr.fungible_info?.name || symbol;
+        const value = attr.value || 0;
+        const qty = attr.quantity?.float || 0;
+        if (value > 1) {
+          totalUsd += value;
+          holdings.push({
+            token: name,
+            symbol,
+            balance: qty > 1000000 ? Math.round(qty).toLocaleString() : qty.toFixed(4),
+            valueUSD: Math.round(value * 100) / 100,
+            percent: 0,
+          });
+        }
+      }
 
-      const [baseEth, baseUsdc, baseWeth, l1Eth, l1Usdc, l1Weth, l1Pepe, l1Shib, l1Uni, l1Link, l1StEth] = await Promise.all([
-        getTokenBalance('0x0000000000000000000000000000000000000000' as any, addr, 'base'),
-        getTokenBalance(T.base.USDC as any, addr, 'base'),
-        getTokenBalance(T.base.WETH as any, addr, 'base'),
-        ethL1Client.getBalance({ address: addr }).then(String).catch(() => '0'),
-        readL1Token(QT.ethereum!.USDC),
-        readL1Token(QT.ethereum!.WETH),
-        readL1Token(l1Tokens.PEPE),
-        readL1Token(l1Tokens.SHIB),
-        readL1Token(l1Tokens.UNI),
-        readL1Token(l1Tokens.LINK),
-        readL1Token(l1Tokens.stETH),
-      ]);
-
-      console.log('[rebalance] L1 balances:', { l1Eth, l1Usdc, l1Weth, l1Pepe, l1StEth, l1Uni, l1Link, l1Shib });
-      const ethFormatted = ((Number(baseEth) + Number(l1Eth)) / 1e18).toFixed(6);
-      const usdcFormatted = ((Number(baseUsdc) / 1e6) + (Number(l1Usdc) / 1e6)).toFixed(2);
-      const wethFormatted = ((Number(baseWeth) + Number(l1Weth)) / 1e18).toFixed(6);
-      const pepeFormatted = (Number(l1Pepe) / 1e18).toFixed(0);
-      const shibFormatted = (Number(l1Shib) / 1e18).toFixed(0);
-      const uniFormatted = (Number(l1Uni) / 1e18).toFixed(4);
-      const linkFormatted = (Number(l1Link) / 1e18).toFixed(4);
-      const stEthFormatted = (Number(l1StEth) / 1e18).toFixed(6);
-
-      // Step 2: Get ETH price via Uniswap quote
-      let ethPriceUsd = 2000;
-      try {
-        const priceQuote = await getQuote(
-          '0x0000000000000000000000000000000000000000' as any,
-          T.base.USDC as any,
-          '1000000000000000',
-          targetAddress as any,
-          'base',
-        );
-        const outAmount = priceQuote.quote?.output?.amount || priceQuote.quote?.orderInfo?.outputs?.[0]?.startAmount;
-        if (outAmount) ethPriceUsd = Number(outAmount) / 1e6 / 0.001;
-      } catch {}
-
-      const ethValueUsd = Number(ethFormatted) * ethPriceUsd;
-      const wethValueUsd = Number(wethFormatted) * ethPriceUsd;
-      const stEthValueUsd = Number(stEthFormatted) * ethPriceUsd;
-      const usdcValueUsd = Number(usdcFormatted);
-      // Rough estimates for memecoins (exact prices would need oracle)
-      const pepeValueUsd = Number(pepeFormatted) * 0.000012;
-      const shibValueUsd = Number(shibFormatted) * 0.000014;
-      const uniValueUsd = Number(uniFormatted) * 7.5;
-      const linkValueUsd = Number(linkFormatted) * 15;
-      const totalUsd = ethValueUsd + wethValueUsd + stEthValueUsd + usdcValueUsd + pepeValueUsd + shibValueUsd + uniValueUsd + linkValueUsd;
-
-      const holdings: { token: string; balance: string; valueUSD: number; percent: number; chain: string }[] = [];
-      const addHolding = (token: string, balance: string, value: number, chain: string) => {
-        if (value > 0.01) holdings.push({ token, balance, valueUSD: Math.round(value * 100) / 100, percent: totalUsd > 0 ? Math.round(value / totalUsd * 100) : 0, chain });
-      };
-      addHolding('ETH', ethFormatted, ethValueUsd, 'Ethereum + Base');
-      addHolding('WETH', wethFormatted, wethValueUsd, 'Ethereum + Base');
-      addHolding('stETH', stEthFormatted, stEthValueUsd, 'Ethereum');
-      addHolding('USDC', usdcFormatted, usdcValueUsd, 'Ethereum + Base');
-      addHolding('UNI', uniFormatted, uniValueUsd, 'Ethereum');
-      addHolding('LINK', linkFormatted, linkValueUsd, 'Ethereum');
-      addHolding('PEPE', pepeFormatted, pepeValueUsd, 'Ethereum');
-      addHolding('SHIB', shibFormatted, shibValueUsd, 'Ethereum');
+      // Calculate percentages
+      for (const h of holdings) {
+        h.percent = totalUsd > 0 ? Math.round(h.valueUSD / totalUsd * 100) : 0;
+      }
 
       const portfolio = {
         address: targetAddress,
-        chains: ['Ethereum L1', 'Base'],
+        source: 'Zerion API (all chains)',
         totalValueUSD: Math.round(totalUsd * 100) / 100,
+        topHoldings: holdings.length,
         holdings,
       };
 
@@ -1136,59 +1087,60 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       );
       const analysis = rebalanceAnalysis.choices[0].message.content;
 
-      // Step 4: Get Uniswap quotes for suggested swaps
+      // Step 4: Generate actionable swap routes
       const routes: any[] = [];
-      if (riskStrategy === 'conservative' && Number(ethFormatted) > 0.001) {
-        try {
-          const swapQuote = await getQuote(
-            '0x0000000000000000000000000000000000000000' as any,
-            T.base.USDC as any,
-            BigInt(Math.floor((Number(baseEth) + Number(l1Eth)) * 0.3)).toString(),
-            targetAddress as any,
-            'base',
-          );
+
+      // Find memecoins/small tokens to suggest swapping
+      const coreTokens = ['ETH', 'WETH', 'USDC', 'USDT', 'DAI', 'stETH', 'wstETH'];
+      const memeHoldings = holdings.filter(h => !coreTokens.includes(h.symbol) && h.valueUSD > 10);
+      const ethHolding = holdings.find(h => h.symbol === 'ETH');
+      const usdcHolding = holdings.find(h => h.symbol === 'USDC');
+
+      if (riskStrategy === 'conservative') {
+        // Suggest selling top memecoins → ETH or USDC
+        for (const meme of memeHoldings.slice(0, 3)) {
           routes.push({
-            action: 'Swap 30% ETH → USDC (de-risk)',
-            routing: swapQuote.routing,
-            estimatedOutput: swapQuote.quote?.output?.amount ? (Number(swapQuote.quote.output.amount) / 1e6).toFixed(2) + ' USDC' : 'see quote',
-            gasFeeUSD: swapQuote.quote?.gasFeeUSD || 'minimal',
+            action: `Sell ${meme.symbol} ($${meme.valueUSD}) → USDC via Uniswap`,
+            token: meme.symbol,
+            currentValue: '$' + meme.valueUSD,
+            reason: 'High volatility memecoin — convert to stablecoin for capital preservation',
+            route: 'Uniswap (Ethereum L1) or bridge to Base first',
           });
-        } catch {}
-      } else if (riskStrategy === 'aggressive' && Number(usdcFormatted) > 1) {
-        try {
-          const swapQuote = await getQuote(
-            T.base.USDC as any,
-            '0x0000000000000000000000000000000000000000' as any,
-            BigInt(Math.floor((Number(baseUsdc) + Number(l1Usdc)) * 0.5)).toString(),
-            targetAddress as any,
-            'base',
-          );
+        }
+        if (ethHolding && ethHolding.valueUSD > 1000) {
           routes.push({
-            action: 'Swap 50% USDC → ETH (growth)',
-            routing: swapQuote.routing,
-            estimatedOutput: swapQuote.quote?.output?.amount ? (Number(swapQuote.quote.output.amount) / 1e18).toFixed(6) + ' ETH' : 'see quote',
-            gasFeeUSD: swapQuote.quote?.gasFeeUSD || 'minimal',
+            action: `Swap 30% ETH ($${Math.round(ethHolding.valueUSD * 0.3)}) → USDC`,
+            reason: 'Reduce ETH exposure for stability',
+            route: 'Uniswap (Ethereum L1 or Base)',
           });
-        } catch {}
+        }
+      } else {
+        // Aggressive: suggest buying more ETH with stablecoins
+        if (usdcHolding && usdcHolding.valueUSD > 100) {
+          routes.push({
+            action: `Swap 70% USDC ($${Math.round(usdcHolding.valueUSD * 0.7)}) → ETH`,
+            reason: 'Maximize ETH exposure for growth',
+            route: 'Uniswap (Ethereum L1 or Base)',
+          });
+        }
+        // Keep top memecoins, suggest consolidating small ones
+        const smallMemes = memeHoldings.filter(m => m.valueUSD < 1000);
+        if (smallMemes.length > 0) {
+          routes.push({
+            action: `Consolidate ${smallMemes.length} small memecoin positions ($${Math.round(smallMemes.reduce((s, m) => s + m.valueUSD, 0))}) → ETH`,
+            tokens: smallMemes.map(m => m.symbol).join(', '),
+            reason: 'Small positions have high gas-to-value ratio — consolidate into ETH',
+            route: 'Uniswap batch swaps on Ethereum L1',
+          });
+        }
       }
 
-      // Step 5: Check cross-chain bridge opportunity
-      try {
-        const bridgeQuote = await getBridgeQuote(
-          T.base.USDC as any,
-          '0xaf88d065e77c8cC2239327C5EDb3A432268e5831' as any,
-          '1000000',
-          targetAddress as any,
-          'base',
-          'arbitrum',
-        );
-        routes.push({
-          action: 'Bridge 1 USDC Base → Arbitrum (diversify chains)',
-          bridge: 'Across Protocol',
-          estimatedOutput: bridgeQuote.quote?.output?.amount ? (Number(bridgeQuote.quote.output.amount) / 1e6).toFixed(4) + ' USDC on Arbitrum' : 'see quote',
-          estimatedFillTime: bridgeQuote.quote?.estimatedFillTimeMs ? bridgeQuote.quote.estimatedFillTimeMs + 'ms' : 'fast',
-        });
-      } catch {}
+      // Always suggest cross-chain bridge
+      routes.push({
+        action: 'Bridge USDC to L2 (Base/Arbitrum) for lower gas',
+        bridge: 'Across Protocol (ERC-7683)',
+        reason: 'L2s have 100x lower gas costs — move stablecoins to Base or Arbitrum',
+      });
 
       return c.json({
         strategy: riskStrategy,
