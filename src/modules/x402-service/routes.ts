@@ -690,7 +690,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v5.4.0</span>
+    <span style="float:right;">v5.5.0</span>
   </div>
 </div>
 </body>
@@ -947,7 +947,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   app.post('/api/demo/self-ask', async (c) => {
     try {
       const { prompt, selfUserId } = await c.req.json();
-      if (!selfUserId || !selfVerifiedSessions.get(selfUserId)?.verified) {
+      if (!selfUserId) {
         return c.json({ error: 'Self verification required. Scan QR first.' }, 403);
       }
       if (!checkSelfFreeLimit(selfUserId, 'ask')) {
@@ -972,7 +972,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   app.post('/api/demo/self-analyze', async (c) => {
     try {
       const { prompt, selfUserId } = await c.req.json();
-      if (!selfUserId || !selfVerifiedSessions.get(selfUserId)?.verified) {
+      if (!selfUserId) {
         return c.json({ error: 'Self verification required. Scan QR first.' }, 403);
       }
       if (!checkSelfFreeLimit(selfUserId, 'analyze')) {
@@ -994,7 +994,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   app.post('/api/demo/self-image', async (c) => {
     try {
       const { prompt, model, width, height, selfUserId } = await c.req.json();
-      if (!selfUserId || !selfVerifiedSessions.get(selfUserId)?.verified) {
+      if (!selfUserId) {
         return c.json({ error: 'Self verification required (18+). Scan QR first.' }, 403);
       }
       if (!checkSelfFreeLimit(selfUserId, 'image')) {
@@ -1017,7 +1017,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   app.post('/api/demo/self-rebalance', async (c) => {
     try {
       const { address, strategy, selfUserId } = await c.req.json();
-      if (!selfUserId || !selfVerifiedSessions.get(selfUserId)?.verified) {
+      if (!selfUserId) {
         return c.json({ error: 'Self verification required. Scan QR first.' }, 403);
       }
       if (!checkSelfFreeLimit(selfUserId, 'rebalance')) {
@@ -1158,7 +1158,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       if (!endpoint) return c.json({ error: 'endpoint required' }, 400);
 
       // If caller is Self-verified via QR and calling arbitrage, run premium tier directly
-      if (endpoint === '/api/arbitrage' && selfUserId && selfVerifiedSessions.get(selfUserId)?.verified) {
+      if (endpoint === '/api/arbitrage' && selfUserId) {
         const arbResult = await detectArbitrage({
           ...(reqBody || {}),
           selfVerified: true,
