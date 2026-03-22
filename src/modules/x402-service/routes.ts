@@ -264,12 +264,12 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
       </div>
     </div>
   </div>
-  <div id="demo-result" style="display:none;background:#1B3A5C;border:2px inset #999;padding:14px;margin:10px 0;max-height:420px;overflow-y:auto;">
+  <div id="demo-result" style="display:none;background:#1B3A5C;border:2px inset #999;padding:14px;margin:10px 0;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
       <span id="demo-status" style="font-size:0.8em;font-weight:600;font-family:Verdana,sans-serif;color:#D4E4F7;"></span>
       <button onclick="document.getElementById('demo-result').style.display='none'" style="background:none;border:none;color:#999;cursor:pointer;font-size:1.1em;font-family:Verdana,sans-serif;">X</button>
     </div>
-    <pre id="demo-json" style="margin:0;white-space:pre-wrap;word-break:break-all;font-size:0.8em;line-height:1.5;max-height:360px;overflow-y:auto;color:#D4E4F7;background:transparent;border:none;padding:0;"></pre>
+    <pre id="demo-json" style="margin:0;white-space:pre-wrap;word-break:break-all;font-size:0.8em;line-height:1.5;color:#D4E4F7;background:transparent;border:none;padding:0;"></pre>
     <div id="demo-pay-btn"></div>
   </div>
   <script>
@@ -682,7 +682,7 @@ export async function createRoutes(deployedUrl?: string, x402Config?: X402Config
   <div class="footer">
     Built for <a href="https://synthesis.md">Synthesis Hackathon</a> — AI × Ethereum.
     Powered by Uniswap, Venice AI, Bankr, x402, and ERC-8004.
-    <span style="float:right;">v5.1.0</span>
+    <span style="float:right;">v5.2.0</span>
   </div>
 </div>
 </body>
